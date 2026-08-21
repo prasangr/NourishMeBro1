@@ -1,0 +1,2789 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#E9ECEE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1113" media="(prefers-color-scheme: dark)">
+<meta name="description" content="Track calories, macros and daily habits. Built around Indian home food.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Nourish me Bro">
+<title>Nourish me Bro &mdash; calories &amp; habits</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Hanken+Grotesk:wght@400..800&display=swap">
+<style>
+/* ============================================================
+   NOURISH ME BRO - steel & haldi
+   Ground: brushed steel. Energy: a single turmeric ramp where
+   darkness = time of day. Macros: four spread hues, always
+   labelled in text as well as colour.
+   ============================================================ */
+:root{
+  --bg:#E9ECEE; --surface:#FFFFFF; --surface-2:#F2F4F6; --sunk:#E3E7EA;
+  --line:#D7DDE1; --line-2:#C3CBD1;
+  --ink:#15191C; --ink-2:#4E585F; --ink-3:#7F8B93;
+
+  /* Meal ramp: the sky through one day, dawn gold to night indigo. Four shades
+     of one hue looked handsome and told you nothing -- on a 30px bar they read
+     as one colour. Hue carries the meal now, lightness only reinforces it. */
+  --r1:#F6C445; --r2:#E4832A; --r3:#A9503C; --r4:#3F4E8C;
+  --accent:#A0680B; --accent-bright:#E8A63A; --accent-soft:#FAF0DC;
+
+  --m-p:#BE3A2B; --m-c:#3B5BA5; --m-f:#7A4B9E; --m-fib:#2E7D51;
+  --water:#0E7F9C; --water-soft:#DEF0F4;
+  --danger:#BE3A2B;
+
+  --shadow:0 1px 1px rgba(21,25,28,.04), 0 6px 18px rgba(21,25,28,.05);
+  --shadow-lg:0 16px 48px rgba(21,25,28,.22);
+  --r:14px;
+  --safe-t:env(safe-area-inset-top,0px);
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --nav-h:60px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E1113; --surface:#181C1F; --surface-2:#212629; --sunk:#101416;
+  --line:#2A3034; --line-2:#3A4247;
+  --ink:#ECEFF1; --ink-2:#A3ADB4; --ink-3:#727D84;
+  --r1:#F7CE63; --r2:#EF954A; --r3:#D2705F; --r4:#7E8BD6;
+  --accent:#F0BE62; --accent-bright:#DCA13B; --accent-soft:#2B2313;
+  --m-p:#E8695A; --m-c:#7C9BE0; --m-f:#B48BD8; --m-fib:#54B583;
+  --water:#4FB8D6; --water-soft:#11313A;
+  --shadow:0 1px 1px rgba(0,0,0,.4), 0 6px 18px rgba(0,0,0,.4);
+  --shadow-lg:0 16px 48px rgba(0,0,0,.6);
+}}
+:root[data-theme="dark"]{
+  --bg:#0E1113; --surface:#181C1F; --surface-2:#212629; --sunk:#101416;
+  --line:#2A3034; --line-2:#3A4247;
+  --ink:#ECEFF1; --ink-2:#A3ADB4; --ink-3:#727D84;
+  --r1:#F7CE63; --r2:#EF954A; --r3:#D2705F; --r4:#7E8BD6;
+  --accent:#F0BE62; --accent-bright:#DCA13B; --accent-soft:#2B2313;
+  --m-p:#E8695A; --m-c:#7C9BE0; --m-f:#B48BD8; --m-fib:#54B583;
+  --water:#4FB8D6; --water-soft:#11313A;
+  --shadow:0 1px 1px rgba(0,0,0,.4), 0 6px 18px rgba(0,0,0,.4);
+  --shadow-lg:0 16px 48px rgba(0,0,0,.6);
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html,body{height:100%}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:15px; line-height:1.45; -webkit-font-smoothing:antialiased;
+  overscroll-behavior-y:none;
+}
+/* iOS zooms into any control under 16px on focus. Never go below. */
+input,select,textarea,button{font-family:inherit;font-size:16px;color:inherit}
+button{cursor:pointer;border:none;background:none;touch-action:manipulation}
+::selection{background:var(--accent-soft);color:var(--ink)}
+:focus-visible{outline:2.5px solid var(--accent);outline-offset:2px;border-radius:4px}
+
+/* Archivo with the width axis opened up - digits read like a scale readout */
+.num{font-family:Archivo,system-ui,sans-serif;font-variation-settings:"wdth" 112,"wght" 800;
+  font-variant-numeric:tabular-nums;letter-spacing:-.015em}
+
+/* ---------------- shell ---------------- */
+.app{
+  max-width:460px; margin:0 auto; position:relative;
+  height:100vh; height:100dvh;
+  background:var(--bg); display:flex; flex-direction:column; overflow:hidden;
+}
+@media(min-width:560px){
+  body{background:var(--sunk)}
+  .app{height:min(900px,94dvh);margin:3dvh auto;border-radius:26px;
+    box-shadow:var(--shadow-lg);border:1px solid var(--line)}
+}
+.scroll{flex:1 1 auto;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:0 14px 24px;overscroll-behavior:contain}
+.scroll::-webkit-scrollbar{width:0}
+
+.top{padding:calc(var(--safe-t) + 16px) 14px 10px;display:flex;align-items:flex-start;
+  justify-content:space-between;gap:12px;flex:none}
+.top .date{font-size:11px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;
+  color:var(--ink-3)}
+.top h1{font-family:Archivo,sans-serif;font-variation-settings:"wdth" 105,"wght" 800;
+  font-size:25px;letter-spacing:-.02em;line-height:1.05;margin-top:3px}
+.iconbtn{width:44px;height:44px;margin:-6px -8px -6px 0;border-radius:12px;display:grid;
+  place-items:center;flex:none;font-size:17px;color:var(--ink-2);transition:background .15s}
+.iconbtn:active{background:var(--surface-2)}
+
+.card{background:var(--surface);border-radius:var(--r);border:1px solid var(--line);
+  box-shadow:var(--shadow);padding:16px;margin-bottom:12px}
+.card > h2{font-size:11px;letter-spacing:.11em;text-transform:uppercase;color:var(--ink-3);
+  font-weight:700;margin-bottom:14px;display:flex;justify-content:space-between;
+  align-items:center;gap:10px}
+.card > h2 button{color:var(--accent);font-size:12px;font-weight:700;text-transform:none;
+  letter-spacing:.01em;padding:4px 0;min-height:32px}
+
+/* ---------------- SIGNATURE: the budget rail ----------------
+   Every logged dish is a slab in one tray. Shade = which meal.
+   A donut says how much is left; this says what spent it.      */
+.hero{padding:18px 16px 16px}
+.hero .lede{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
+.hero .big{font-size:clamp(46px,15.5vw,64px);line-height:.92}
+.hero .big.over{color:var(--danger)}
+.hero .unit{font-size:14px;font-weight:700;color:var(--ink-2);letter-spacing:.01em}
+.hero .sub{font-size:13px;color:var(--ink-3);font-weight:600;margin-top:7px;
+  font-variant-numeric:tabular-nums}
+
+.rail{margin-top:18px}
+.rail-bar{position:relative;padding-top:10px}
+.rail-track{display:flex;height:30px;border-radius:7px;overflow:hidden;
+  background:var(--sunk);box-shadow:inset 0 1px 2px rgba(21,25,28,.08)}
+.rail-track .seg{height:100%;min-width:2px;box-shadow:inset -1.5px 0 0 var(--surface);
+  transition:width .5s cubic-bezier(.4,1.1,.5,1)}
+.rail-track .seg:last-child{box-shadow:none}
+.rail-goal{position:absolute;top:10px;bottom:0;width:2px;background:var(--ink);z-index:2;
+  pointer-events:none}
+.rail-goal::after{content:"GOAL";position:absolute;top:-11px;right:0;font-size:8.5px;
+  font-weight:800;letter-spacing:.09em;color:var(--ink);white-space:nowrap}
+.rail-empty{position:absolute;left:0;right:0;top:10px;bottom:0;display:grid;place-items:center;
+  font-size:12px;font-weight:600;color:var(--ink-3);pointer-events:none}
+.rail-key{display:flex;flex-wrap:wrap;gap:5px 14px;margin-top:11px}
+.rail-key span{font-size:11px;font-weight:700;color:var(--ink-2);display:flex;
+  align-items:center;gap:5px;font-variant-numeric:tabular-nums}
+.sw{width:9px;height:9px;border-radius:2.5px;flex:none}
+
+/* macros - same rail language, one row each */
+.macros{margin-top:20px;border-top:1px solid var(--line);padding-top:14px;
+  display:flex;flex-direction:column;gap:11px}
+.mrow{display:grid;grid-template-columns:58px 1fr auto;align-items:center;gap:11px}
+.mrow .mk{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--ink-2)}
+.mrow .mtrack{height:7px;border-radius:4px;background:var(--sunk);overflow:hidden}
+.mrow .mtrack i{display:block;height:100%;border-radius:4px;transition:width .5s ease}
+.mrow .mv{font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums;
+  color:var(--ink);min-width:66px;text-align:right}
+.mrow .mv em{font-style:normal;color:var(--ink-3);font-weight:600}
+
+/* ---------------- water ---------------- */
+.water-row{display:flex;align-items:center;gap:15px}
+.glass{position:relative;width:46px;height:60px;flex:none;border:2.5px solid var(--water);
+  border-top:none;border-radius:4px 4px 12px 12px;overflow:hidden;background:var(--water-soft)}
+.glass .fill{position:absolute;left:0;right:0;bottom:0;background:var(--water);
+  transition:height .5s cubic-bezier(.4,1.2,.5,1)}
+.water-info{flex:1;min-width:0}
+.water-info .num{font-size:24px}
+.water-info .sub{font-size:12px;color:var(--ink-3);font-weight:600;margin-top:2px;
+  font-variant-numeric:tabular-nums}
+.water-btns{display:flex;gap:7px;margin-top:14px;flex-wrap:wrap}
+.chip{background:var(--surface-2);border:1px solid var(--line);border-radius:9px;
+  padding:0 13px;min-height:40px;font-size:13px;font-weight:700;display:flex;
+  align-items:center;gap:5px;transition:transform .1s}
+.chip:active{transform:scale(.95)}
+.chip.water{color:var(--water)}
+.chip.minus{color:var(--ink-3);padding:0 15px}
+
+/* ---------------- meals ---------------- */
+/* The meal's shade rides the card edge, so scrolling Today runs the same
+   dawn-to-night ramp as the rail above it. The legend keeps the swatches. */
+.meal{padding:14px 16px;box-shadow:var(--shadow),inset 3px 0 0 var(--tone)}
+.meal.is-empty{padding:11px 16px}
+.meal.is-empty .cal{color:var(--ink-3)}
+.meal-head{display:flex;align-items:center;gap:9px}
+.meal-head .em{font-size:15px}
+.meal-head .t{font-weight:700;font-size:14.5px;flex:1;min-width:0}
+.meal-head .cal{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums;
+  color:var(--ink)}
+.meal-add{color:var(--accent);font-weight:700;font-size:13px;padding:0 4px;min-height:40px;
+  display:flex;align-items:center}
+/* per-meal macro totals */
+.meal-tot{display:flex;flex-wrap:wrap;gap:3px 10px;margin:8px 0 2px 24px;font-size:11.5px;
+  font-weight:700;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.meal-tot b{font-weight:800;color:var(--ink-2)}
+
+.fi{display:flex;align-items:flex-start;gap:10px;padding:11px 0;
+  border-top:1px solid var(--line)}
+.fi:first-of-type{border-top:none}
+.fi .fi-em{font-size:19px;line-height:1.25;flex:none;width:22px;text-align:center}
+.fi .fi-b{flex:1;min-width:0}
+.fi .fi-n{font-size:14.5px;font-weight:700;line-height:1.25}
+.fi .fi-q{font-size:12px;color:var(--ink-3);font-weight:600;margin-top:1px}
+/* per-item macros - always visible, never behind a tap */
+.fi-macros{display:flex;flex-wrap:wrap;gap:4px;margin-top:7px}
+.fi-macros b{font-size:10.5px;font-weight:800;letter-spacing:.02em;padding:2.5px 6px;
+  border-radius:5px;font-variant-numeric:tabular-nums;background:var(--surface-2);
+  color:var(--tone);border:1px solid var(--line)}
+.fi .fi-cal{font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;
+  padding-top:1px;flex:none}
+.fi .del{color:var(--ink-3);font-size:14px;width:34px;height:34px;margin:-6px -8px 0 0;
+  flex:none;display:grid;place-items:center;border-radius:8px}
+.fi .del:active{background:var(--surface-2)}
+.empty{color:var(--ink-3);font-size:13px;text-align:center;padding:16px 0 6px;font-weight:600}
+
+/* Shown only when the browser refuses to persist anything (sandboxed frame,
+   private mode). Silent data loss is worse than an ugly banner. */
+.warn{display:flex;gap:9px;align-items:flex-start;background:var(--accent-soft);
+  border:1px solid var(--accent);border-radius:11px;padding:12px 13px;margin-bottom:12px;
+  font-size:12.5px;font-weight:600;color:var(--ink);line-height:1.45}
+.warn b{font-weight:800;display:block;margin-bottom:2px}
+
+/* ---------------- habits ----------------
+   The day stepper. It only turns amber once you have stepped off today, so the
+   normal case stays quiet and a backdated tick is impossible to miss. */
+.daybar{display:flex;align-items:center;gap:6px;background:var(--surface);
+  border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);
+  padding:6px;margin-bottom:12px}
+.daybar > div{flex:1;min-width:0;text-align:center;line-height:1.25}
+.daybar b{display:block;font-size:14px;font-weight:800}
+.daybar span{font-size:11px;font-weight:700;color:var(--ink-3);
+  letter-spacing:.06em;text-transform:uppercase}
+.daybar button{width:44px;height:44px;flex:none;border-radius:11px;font-size:20px;
+  font-weight:800;color:var(--ink-2);display:grid;place-items:center;line-height:1}
+.daybar button:active{background:var(--surface-2)}
+.daybar button[disabled]{color:var(--line-2);cursor:default}
+.daybar.past{border-color:var(--accent);background:var(--accent-soft)}
+.daybar.past b,.daybar.past span{color:var(--accent)}
+
+/* ---------------- habits ---------------- */
+.habit{display:flex;align-items:center;gap:13px;padding:13px 0;border-top:1px solid var(--line)}
+.habit:first-of-type{border-top:none}
+.habit .h-em{width:42px;height:42px;border-radius:11px;background:var(--surface-2);
+  border:1px solid var(--line);display:grid;place-items:center;font-size:19px;flex:none}
+.habit .h-body{flex:1;min-width:0}
+.habit .h-name{font-weight:700;font-size:14.5px}
+.habit .h-streak{font-size:11.5px;color:var(--ink-3);font-weight:700;display:flex;
+  align-items:center;gap:8px;margin-top:1px}
+.habit .h-streak.live{color:var(--accent)}
+.habit .h-streak button{color:var(--ink-3);font-size:11.5px;font-weight:700;
+  text-decoration:underline;text-underline-offset:2px;min-height:30px}
+.check{width:40px;height:40px;border-radius:11px;border:2px solid var(--line-2);flex:none;
+  display:grid;place-items:center;font-size:17px;color:transparent;
+  transition:transform .15s,background .15s,border-color .15s}
+.check.on{background:var(--m-fib);border-color:var(--m-fib);color:#fff}
+.check:active{transform:scale(.88)}
+.counter{display:flex;align-items:center;gap:6px;flex:none}
+.counter button{width:36px;height:36px;border-radius:10px;background:var(--surface-2);
+  border:1px solid var(--line);font-size:17px;font-weight:800;display:grid;place-items:center;
+  line-height:1}
+.counter .cval{min-width:44px;text-align:center;font-size:14px;font-weight:800;
+  font-variant-numeric:tabular-nums}
+.counter .cval small{color:var(--ink-3);font-weight:700}
+
+/* ---------------- the week rail ----------------
+   The budget rail stood on end. One column a day, sliced the same way: meal
+   shade for calories, one lane per habit on the habits tab. The goal is drawn
+   once across all seven days instead of being marked seven times. */
+.wkplot{position:relative;display:flex;align-items:flex-end;gap:7px;height:104px;
+  padding-top:8px;border-bottom:1px solid var(--line-2)}
+.wkcol{flex:1;min-width:0;height:100%;display:flex;justify-content:center}
+.wkbar{width:100%;max-width:24px;height:100%;background:var(--sunk);border-radius:5px;
+  overflow:hidden;display:flex;flex-direction:column-reverse;justify-content:flex-start}
+.wkbar i{display:block;width:100%;flex:none;transition:height .45s ease}
+.wkbar i+i{box-shadow:inset 0 -1.5px 0 var(--surface)}
+.wkgoal{position:absolute;left:0;right:0;height:0;border-top:1.5px dashed var(--ink-2);
+  z-index:2;pointer-events:none}
+.wkgoal b{position:absolute;right:0;top:-12px;font-size:8.5px;font-weight:800;
+  letter-spacing:.09em;color:var(--ink-2);background:var(--surface);padding:0 3px}
+.wklabels{display:flex;gap:7px;margin-top:9px}
+.wklabels span{flex:1;min-width:0;text-align:center;font-size:10.5px;font-weight:700;
+  color:var(--ink-3)}
+.wklabels .is-today{color:var(--accent)}
+.wklabels .is-over{color:var(--danger)}
+.wknote{font-size:11.5px;color:var(--ink-3);font-weight:600;margin-top:11px;line-height:1.45}
+
+/* ---------------- foods tab ---------------- */
+.search{display:flex;align-items:center;gap:9px;background:var(--surface);
+  border:1px solid var(--line);border-radius:11px;padding:0 14px;min-height:48px;
+  box-shadow:var(--shadow);margin:2px 0 11px}
+.search input{border:none;background:none;flex:1;min-width:0;outline:none;padding:12px 0}
+.search .ic{color:var(--ink-3);font-size:15px;flex:none}
+.cats{display:flex;gap:7px;overflow-x:auto;padding:2px 0 12px;scrollbar-width:none;
+  -webkit-overflow-scrolling:touch}
+.cats::-webkit-scrollbar{height:0}
+.cat{white-space:nowrap;padding:0 14px;min-height:38px;display:flex;align-items:center;
+  border-radius:9px;background:var(--surface);border:1px solid var(--line);font-size:13px;
+  font-weight:700;flex:none;color:var(--ink-2)}
+.cat.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.cat-h{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--ink-3);padding:16px 0 2px}
+.cat-h:first-child{padding-top:2px}
+.pick{display:flex;align-items:center;gap:11px;padding:11px 0;
+  border-top:1px solid var(--line);width:100%;text-align:left}
+.pick:first-of-type{border-top:none}
+.pick .p-em{font-size:20px;flex:none;width:24px;text-align:center}
+.pick .p-b{flex:1;min-width:0}
+.pick .p-n{font-size:14.5px;font-weight:700;line-height:1.25}
+.pick .p-s{font-size:11.5px;color:var(--ink-3);font-weight:600;margin-top:2px;
+  font-variant-numeric:tabular-nums}
+.pick .p-cal{font-size:13.5px;font-weight:800;font-variant-numeric:tabular-nums;flex:none}
+.pick .p-add{color:var(--accent);font-size:19px;font-weight:700;line-height:1;flex:none;
+  width:22px;text-align:center}
+.addfood-link{text-align:center;padding:16px 0 4px;color:var(--accent);font-weight:700;
+  font-size:13.5px;width:100%;min-height:44px}
+
+/* ---------------- forms ---------------- */
+.field{margin-bottom:13px}
+.field label{display:block;font-size:11px;font-weight:800;color:var(--ink-2);margin-bottom:6px;
+  text-transform:uppercase;letter-spacing:.07em}
+.inrow{display:flex;align-items:center;gap:8px;background:var(--surface-2);
+  border:1px solid var(--line);border-radius:10px;padding:0 13px;min-height:48px}
+.inrow input{flex:1;min-width:0;border:none;background:none;outline:none;padding:13px 0}
+.inrow .unit{color:var(--ink-3);font-size:13px;font-weight:700;flex:none}
+/* min-width:0 or the number inputs keep their intrinsic size and push the
+   whole card wider than the phone. */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.grid2>*{min-width:0}
+
+.btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:52px;
+  padding:14px;border-radius:12px;background:var(--accent);color:#FFFFFF;font-weight:800;
+  font-size:15px;text-align:center;transition:transform .1s}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn{color:#15191C}}
+:root[data-theme="dark"] .btn{color:#15191C}
+.btn:active{transform:scale(.985)}
+.btn.ghost{background:var(--surface-2);color:var(--ink);border:1px solid var(--line)}
+:root[data-theme="dark"] .btn.ghost{color:var(--ink)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn.ghost{color:var(--ink)}}
+.btn.danger{background:none;color:var(--danger);border:1px solid var(--line)}
+:root[data-theme="dark"] .btn.danger{color:var(--danger)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn.danger{color:var(--danger)}}
+.stack{display:flex;flex-direction:column;gap:9px}
+
+/* ---------------- nav + fab ---------------- */
+.nav{flex:none;height:calc(var(--nav-h) + var(--safe-b));padding-bottom:var(--safe-b);
+  background:var(--surface);border-top:1px solid var(--line);display:flex;
+  align-items:stretch;z-index:30}
+.nav button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;color:var(--ink-3);font-size:10px;font-weight:800;letter-spacing:.04em;
+  text-transform:uppercase}
+.nav button svg{width:21px;height:21px;stroke:currentColor;stroke-width:2;fill:none;
+  stroke-linecap:round;stroke-linejoin:round}
+.nav button.on{color:var(--ink)}
+.nav button.on svg{stroke:var(--accent)}
+
+/* No floating action button: it sat over the calorie figures it was meant to
+   help you read, and each meal's own "+ Add" already pre-selects that meal. */
+
+/* ---------------- sheet ---------------- */
+.scrim{position:fixed;inset:0;background:rgba(14,17,19,.55);z-index:40;opacity:0;
+  pointer-events:none;transition:opacity .25s}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:50%;bottom:0;transform:translate(-50%,101%);width:100%;
+  max-width:460px;background:var(--surface);border-radius:20px 20px 0 0;z-index:41;
+  transition:transform .34s cubic-bezier(.32,.72,0,1);max-height:88dvh;
+  display:flex;flex-direction:column;box-shadow:var(--shadow-lg);
+  border:1px solid var(--line);border-bottom:none;visibility:hidden}
+.sheet.on{transform:translate(-50%,0);visibility:visible}
+.sheet.tall{height:88dvh}
+.sheet .grab{width:36px;height:4px;background:var(--line-2);border-radius:2px;
+  margin:9px auto 2px;flex:none}
+.sheet .sh-head{padding:8px 18px 10px;display:flex;align-items:center;
+  justify-content:space-between;gap:10px;flex:none}
+.sheet .sh-head h3{font-family:Archivo,sans-serif;font-variation-settings:"wdth" 105,"wght" 800;
+  font-size:18px;letter-spacing:-.01em}
+.sheet .sh-head .x{font-size:17px;color:var(--ink-2);width:38px;height:38px;margin-right:-9px;
+  display:grid;place-items:center;border-radius:10px;flex:none}
+.sheet .sh-head .x:active{background:var(--surface-2)}
+.sheet .sh-body{overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:0 18px calc(22px + var(--safe-b));flex:1 1 auto;min-height:0;
+  overscroll-behavior:contain}
+/* search stays pinned so results are reachable without scrolling back up */
+.sh-body .search.pin{position:sticky;top:0;z-index:3;margin:0 0 8px;box-shadow:none}
+
+.qty-food{display:flex;align-items:center;gap:12px;padding:6px 0 16px}
+.qty-food .qf-em{font-size:28px}
+.qty-food .qf-n{font-weight:800;font-size:16.5px;line-height:1.2}
+.qty-food .qf-s{font-size:12.5px;color:var(--ink-3);font-weight:600;margin-top:2px}
+.flabel{display:block;font-size:11px;font-weight:800;color:var(--ink-2);margin-bottom:6px;
+  text-transform:uppercase;letter-spacing:.07em}
+.seg{display:flex;gap:7px;margin:0 0 16px}
+.seg button{flex:1;min-width:0;min-height:46px;border-radius:10px;background:var(--surface-2);
+  border:1px solid var(--line);font-weight:800;font-size:13.5px;color:var(--ink-2)}
+.seg button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.meal-pick{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:16px}
+.meal-pick button{padding:11px 2px;border-radius:10px;background:var(--surface-2);
+  border:1px solid var(--line);font-weight:700;font-size:11.5px;display:flex;
+  flex-direction:column;gap:4px;align-items:center;color:var(--ink-2);min-height:58px;
+  justify-content:center}
+.meal-pick button .em{font-size:16px}
+.meal-pick button.on{background:var(--accent-soft);border-color:var(--accent);
+  color:var(--accent)}
+/* A stacked choice: the label answers, the line under it explains. Used where
+   the options need a sentence and a segmented control would clip them. */
+.opt{display:block;width:100%;text-align:left;background:var(--surface-2);
+  border:1px solid var(--line);border-radius:10px;padding:11px 13px;min-height:52px}
+.opt b{display:block;font-size:14px;font-weight:800;color:var(--ink)}
+.opt span{display:block;font-size:12px;font-weight:600;color:var(--ink-3);margin-top:1px}
+.opt.on{background:var(--accent-soft);border-color:var(--accent)}
+.opt.on b{color:var(--accent)}
+.seg.wrap{flex-wrap:wrap}
+.seg.wrap button{flex:1 1 30%;min-height:40px;font-size:12.5px;padding:0 6px}
+
+/* The number the whole sheet exists to produce. It is a suggestion, so it
+   shows its working underneath rather than arriving as an instruction. */
+.suggest{background:var(--accent-soft);border:1px solid var(--accent);border-radius:12px;
+  padding:14px;margin-bottom:16px;text-align:center}
+.suggest .big{font-size:40px;line-height:1;color:var(--accent)}
+.suggest .lbl{font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--accent);margin-top:4px}
+.suggest p{font-size:12.5px;font-weight:600;color:var(--ink-2);line-height:1.5;margin-top:10px}
+.suggest.waiting{background:var(--surface-2);border-color:var(--line);border-style:dashed}
+.suggest.waiting span{font-size:12.5px;font-weight:600;color:var(--ink-3)}
+
+.nutri-prev{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;background:var(--surface-2);
+  border:1px solid var(--line);border-radius:11px;padding:13px 6px;margin-bottom:16px}
+.nutri-prev div{text-align:center;min-width:0}
+.nutri-prev .v{font-size:16px}
+.nutri-prev .k{font-size:9.5px;color:var(--ink-3);font-weight:800;text-transform:uppercase;
+  letter-spacing:.04em;margin-top:2px}
+.ta{width:100%;height:170px;border:1px solid var(--line);border-radius:11px;padding:12px;
+  background:var(--surface-2);color:var(--ink);font-size:16px;resize:none;outline:none;
+  font-family:ui-monospace,SFMono-Regular,Menlo,monospace;line-height:1.4}
+.hint{font-size:13px;color:var(--ink-2);margin-bottom:10px;line-height:1.5}
+
+/* ---------------- sign in ---------------- */
+.auth{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;
+  align-items:center;justify-content:center;padding:24px 20px;overflow-y:auto}
+.auth[hidden]{display:none}
+.auth-in{width:100%;max-width:360px}
+.auth h1{font-family:Archivo,sans-serif;font-variation-settings:"wdth" 112,"wght" 800;
+  font-size:40px;letter-spacing:-.03em;line-height:1}
+.auth .tag{color:var(--ink-2);font-size:14px;font-weight:600;margin:8px 0 26px;line-height:1.5}
+.auth .ramp{display:flex;gap:3px;margin-bottom:22px}
+.auth .ramp i{height:7px;flex:1;border-radius:2px}
+.auth .err{background:var(--accent-soft);border:1px solid var(--danger);color:var(--danger);
+  border-radius:9px;padding:10px 12px;font-size:12.5px;font-weight:700;margin-bottom:13px;
+  line-height:1.45}
+/* Same box, but for news rather than a refusal: nothing went wrong. */
+.auth .err.note{border-color:var(--accent);color:var(--accent)}
+.auth .alt{text-align:center;margin-top:16px;font-size:13px;color:var(--ink-2);font-weight:600}
+.auth .alt button{color:var(--accent);font-weight:800;font-size:13px;padding:6px;
+  text-decoration:underline;text-underline-offset:2px}
+.auth .note{font-size:11.5px;color:var(--ink-3);font-weight:600;text-align:center;
+  margin-top:22px;line-height:1.5}
+
+/* ---------------- the laddoo ----------------
+   One round sweet sitting in a steel plate. He blinks while you read, hides
+   behind his mitts while you type your password (and sneaks one peek), shakes
+   when a sign-in is refused, and holds up a spoon when it lands. Every state is
+   driven by one data-mood attribute so the JS stays to one line.
+   His colours are fixed hexes, not tokens: he stays golden in both themes while
+   the plate behind him flips. */
+.mascot{width:138px;margin:0 auto 18px;display:block}
+.mascot svg{width:100%;height:auto;display:block;overflow:visible}
+.m-plate{fill:var(--surface);stroke:var(--line-2);stroke-width:2}
+.m-rim{fill:none;stroke:var(--line-2);stroke-width:1.5;opacity:.75}
+/* one ink weight around every shape, and nothing hairline: that is what makes
+   him read as a cartoon rather than an icon */
+.m-ink{stroke:#4A3010;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}
+.m-body{fill:#EDA93E}
+.m-limb{fill:#E39C31}
+.m-crumb{fill:#C8811C}
+.m-white{fill:#FFFFFF}
+.m-pupil{fill:#3A2712}
+.m-shine{fill:#FFFFFF}
+.m-cheek{fill:#D9542F;opacity:.32}
+.m-line{fill:none;stroke:#3A2712;stroke-width:3.6;stroke-linecap:round}
+.m-fill{fill:#3A2712}
+.m-spoon{fill:#F2F5F6}
+.m-head,.m-eyes,.m-hand,.m-hold{transform-box:view-box}
+
+/* eyes: a slow blink is the whole idle state -- no drifting, no floating */
+.m-eyes{transform-origin:60px 58px;animation:m-blink 6.5s infinite}
+@keyframes m-blink{0%,93%,97%,100%{transform:scaleY(1)}95%{transform:scaleY(.08)}}
+.m-joy{opacity:0}
+[data-mood="yes"] .m-eyes{opacity:0;animation:none}
+[data-mood="yes"] .m-joy{opacity:1}
+
+/* mouth: one shape per mood, cross-faded */
+.m-mouth{opacity:0;transition:opacity .16s}
+[data-mood="idle"] .m-smile,[data-mood="peek"] .m-smile{opacity:1}
+[data-mood="no"] .m-frown{opacity:1}
+[data-mood="yes"] .m-grin{opacity:1}
+
+/* mitts: parked off-canvas, up over the eyes while the password is focused.
+   Each arm is two strokes on one curve, dark under gold, so the limb outlines
+   itself and stays attached to him instead of floating. */
+.m-arm-ink{fill:none;stroke:#4A3010;stroke-width:17;stroke-linecap:round}
+.m-arm{fill:none;stroke:#E39C31;stroke-width:11;stroke-linecap:round}
+.m-hand{transform-origin:0 0;transform:translate(60px,150px);opacity:0;
+  transition:transform .3s cubic-bezier(.34,1.45,.64,1),opacity .2s}
+[data-mood="peek"] .m-hand{opacity:1}
+[data-mood="peek"] .m-hl{transform:translate(45px,58px);animation:m-peek-l 5s ease-in-out 1.5s infinite}
+[data-mood="peek"] .m-hr{transform:translate(75px,58px)}
+@keyframes m-peek-l{
+  0%,70%,100%{transform:translate(45px,58px)}
+  77%,87%{transform:translate(38px,76px)}
+}
+
+/* the spoon, held up on a good sign-in */
+.m-hold{transform-origin:0 0;transform:translate(72px,150px);opacity:0;
+  transition:transform .42s cubic-bezier(.34,1.6,.6,1) .1s,opacity .2s .1s}
+[data-mood="yes"] .m-hold{opacity:1;transform:translate(93px,50px) rotate(13deg)}
+
+/* head */
+.m-head{transform-origin:60px 98px}
+[data-mood="no"] .m-head{animation:m-no .5s ease-in-out 2}
+[data-mood="yes"] .m-head{animation:m-nod .55s ease-in-out}
+@keyframes m-no{0%,100%{transform:rotate(0)}22%{transform:rotate(-12deg)}
+  50%{transform:rotate(11deg)}78%{transform:rotate(-7deg)}}
+@keyframes m-nod{0%,100%{transform:translateY(0)}35%{transform:translateY(-7px)}
+  65%{transform:translateY(1px)}}
+
+@media (prefers-reduced-motion:reduce){
+  .mascot *{animation:none!important;transition:none!important}
+}
+
+.signout{color:var(--danger);font-weight:700;font-size:13px}
+.whoami{font-size:11.5px;color:var(--ink-3);font-weight:700;margin-top:10px;text-align:center;
+  word-break:break-all}
+
+.toast{position:fixed;left:50%;bottom:calc(var(--nav-h) + var(--safe-b) + 24px);
+  transform:translate(-50%,14px);background:var(--ink);color:var(--bg);padding:12px 18px;
+  border-radius:11px;font-weight:700;font-size:13.5px;z-index:60;opacity:0;
+  pointer-events:none;transition:.26s;box-shadow:var(--shadow-lg);white-space:nowrap;
+  max-width:92vw;overflow:hidden;text-overflow:ellipsis}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+.burst{position:fixed;z-index:70;font-size:22px;pointer-events:none;
+  animation:conf .95s ease-out forwards}
+@keyframes conf{0%{opacity:1;transform:translate(0,0) scale(.4)}
+  100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(1.05)}}
+
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <div id="view" class="scroll"></div>
+  <nav class="nav" id="nav">
+    <button data-tab="today" class="on"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 11h18"/></svg>Today</button>
+    <button data-tab="habits"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>Habits</button>
+    <button data-tab="foods"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v7a3 3 0 003 3v8M7 3v6M18 3c-1.5 0-2 4-2 6s.5 3 2 3v9"/></svg>Foods</button>
+    <button data-tab="you"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>You</button>
+  </nav>
+</div>
+
+<div class="auth" id="auth" hidden>
+  <div class="auth-in">
+    <div class="mascot" id="mascot" data-mood="idle" aria-hidden="true">
+      <svg viewBox="0 0 120 124">
+        <circle class="m-plate" cx="60" cy="60" r="47"/>
+        <circle class="m-rim" cx="60" cy="60" r="41"/>
+        <g class="m-head">
+          <ellipse class="m-limb m-ink" cx="47" cy="100" rx="9" ry="6"/>
+          <ellipse class="m-limb m-ink" cx="73" cy="100" rx="9" ry="6"/>
+          <circle class="m-body m-ink" cx="60" cy="62" r="36"/>
+          <g class="m-crumb">
+            <circle cx="36" cy="44" r="2.4"/><circle cx="84" cy="42" r="2"/>
+            <circle cx="30" cy="70" r="2.2"/><circle cx="90" cy="66" r="2.4"/>
+            <circle cx="44" cy="88" r="2"/><circle cx="76" cy="90" r="2.2"/>
+            <circle cx="60" cy="93" r="1.9"/><circle cx="60" cy="30" r="2.1"/>
+          </g>
+          <ellipse class="m-cheek" cx="36" cy="72" rx="8" ry="5.5"/>
+          <ellipse class="m-cheek" cx="84" cy="72" rx="8" ry="5.5"/>
+          <g class="m-eyes">
+            <ellipse class="m-white m-ink" cx="47" cy="58" rx="9" ry="10.5"/>
+            <ellipse class="m-white m-ink" cx="73" cy="58" rx="9" ry="10.5"/>
+            <circle class="m-pupil" cx="48" cy="59" r="5"/>
+            <circle class="m-pupil" cx="74" cy="59" r="5"/>
+            <circle class="m-shine" cx="45.6" cy="56" r="2"/>
+            <circle class="m-shine" cx="71.6" cy="56" r="2"/>
+          </g>
+          <g class="m-joy m-line"><path d="M39 60q8-10 16 0"/><path d="M65 60q8-10 16 0"/></g>
+          <path class="m-mouth m-smile m-line" d="M53 76q7 7 14 0"/>
+          <path class="m-mouth m-frown m-line" d="M53 82q7-7 14 0"/>
+          <path class="m-mouth m-grin m-fill" d="M49 74h22a11 11 0 0 1-22 0z"/>
+        </g>
+        <g class="m-hand m-hl">
+          <path class="m-arm-ink" d="M0 4C-5 14-12 22-19 28"/>
+          <path class="m-arm" d="M0 4C-5 14-12 22-19 28"/>
+          <circle class="m-limb m-ink" cx="0" cy="0" r="11"/>
+        </g>
+        <g class="m-hand m-hr">
+          <path class="m-arm-ink" d="M0 4C5 14 12 22 19 28"/>
+          <path class="m-arm" d="M0 4C5 14 12 22 19 28"/>
+          <circle class="m-limb m-ink" cx="0" cy="0" r="11"/>
+        </g>
+        <g class="m-hold">
+          <path class="m-arm-ink" d="M0 6C-2 16-5 24-9 32"/>
+          <path class="m-arm" d="M0 6C-2 16-5 24-9 32"/>
+          <rect class="m-spoon m-ink" x="-3" y="-24" width="6" height="22" rx="3"/>
+          <ellipse class="m-spoon m-ink" cx="0" cy="-26" rx="7.5" ry="9.5"/>
+          <circle class="m-limb m-ink" cx="0" cy="0" r="11"/>
+        </g>
+      </svg>
+    </div>
+    <div class="ramp" aria-hidden="true">
+      <i style="background:var(--r1)"></i><i style="background:var(--r2)"></i>
+      <i style="background:var(--r3)"></i><i style="background:var(--r4)"></i>
+    </div>
+    <h1>Nourish me Bro</h1>
+    <p class="tag" id="auth-tag">Sign in to reach your logs from any device.</p>
+    <div class="err" id="auth-err" hidden></div>
+    <form id="auth-form" novalidate>
+      <div class="field" id="au-name-field" hidden><label for="au-name">Your name</label>
+        <div class="inrow"><input id="au-name" type="text" autocomplete="name"
+          placeholder="What should we call you?"></div></div>
+      <div class="field"><label for="au-email">Email</label>
+        <div class="inrow"><input id="au-email" type="email" autocomplete="email"
+          autocapitalize="none" spellcheck="false" placeholder="you@example.com" required></div></div>
+      <div class="field"><label for="au-pass">Password</label>
+        <div class="inrow"><input id="au-pass" type="password" autocomplete="current-password"
+          placeholder="At least 6 characters" required></div></div>
+      <button class="btn" id="au-go" type="submit">Sign in</button>
+    </form>
+    <div class="alt" id="auth-alt"></div>
+    <p class="note">Your logs are stored in your own account and are not visible
+      to anyone else.</p>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-title">
+  <div class="grab"></div>
+  <div class="sh-head"><h3 id="sh-title"></h3><button class="x" id="sh-x" aria-label="Close">&#10005;</button></div>
+  <div class="sh-body" id="sh-body"></div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+/* ============================ DATA ============================ */
+// Nutrients are per typical serving. cal=kcal, p/c/f/fib in grams.
+const FOODS = [
+ // Dals & Legumes
+ {n:"Dal Tadka",e:"🍲",s:"1 bowl (200g)",cal:180,p:9,c:24,f:6,fib:6,cat:"Dal & Legumes"},
+ {n:"Dal Makhani",e:"🍲",s:"1 bowl (200g)",cal:290,p:11,c:26,f:15,fib:8,cat:"Dal & Legumes"},
+ {n:"Rajma (Kidney Bean Curry)",e:"🫘",s:"1 bowl (200g)",cal:245,p:12,c:34,f:6,fib:11,cat:"Dal & Legumes"},
+ {n:"Chana Masala",e:"🫘",s:"1 bowl (200g)",cal:270,p:13,c:38,f:7,fib:12,cat:"Dal & Legumes"},
+ {n:"Chole",e:"🫘",s:"1 bowl (200g)",cal:290,p:13,c:40,f:9,fib:12,cat:"Dal & Legumes"},
+ {n:"Sambar",e:"🍲",s:"1 bowl (200g)",cal:150,p:7,c:22,f:4,fib:6,cat:"Dal & Legumes"},
+ {n:"Moong Dal (yellow)",e:"🍲",s:"1 bowl (200g)",cal:160,p:11,c:24,f:3,fib:7,cat:"Dal & Legumes"},
+ {n:"Kadhi Pakora",e:"🍲",s:"1 bowl (200g)",cal:230,p:8,c:20,f:13,fib:2,cat:"Dal & Legumes"},
+ // Sabzis / Veg curries
+ {n:"Palak Paneer",e:"🥬",s:"1 bowl (200g)",cal:280,p:14,c:12,f:20,fib:4,cat:"Vegetables"},
+ {n:"Paneer Butter Masala",e:"🧀",s:"1 bowl (200g)",cal:350,p:14,c:16,f:26,fib:3,cat:"Vegetables"},
+ {n:"Aloo Gobi",e:"🥔",s:"1 bowl (200g)",cal:180,p:5,c:24,f:8,fib:6,cat:"Vegetables"},
+ {n:"Bhindi Masala",e:"🌿",s:"1 bowl (150g)",cal:160,p:4,c:14,f:10,fib:5,cat:"Vegetables"},
+ {n:"Baingan Bharta",e:"🍆",s:"1 bowl (200g)",cal:170,p:4,c:16,f:11,fib:6,cat:"Vegetables"},
+ {n:"Mixed Veg Curry",e:"🥕",s:"1 bowl (200g)",cal:190,p:5,c:20,f:10,fib:6,cat:"Vegetables"},
+ {n:"Aloo Matar",e:"🥔",s:"1 bowl (200g)",cal:200,p:6,c:28,f:7,fib:6,cat:"Vegetables"},
+ {n:"Bhindi Fry",e:"🌿",s:"1 bowl (150g)",cal:170,p:4,c:12,f:12,fib:5,cat:"Vegetables"},
+ {n:"Malai Kofta",e:"🧆",s:"2 kofta + gravy",cal:400,p:11,c:26,f:28,fib:3,cat:"Vegetables"},
+ {n:"Paneer Bhurji",e:"🧀",s:"1 bowl (150g)",cal:290,p:16,c:8,f:22,fib:2,cat:"Vegetables"},
+ {n:"Matar Paneer",e:"🧀",s:"1 bowl (200g)",cal:300,p:14,c:18,f:19,fib:5,cat:"Vegetables"},
+ {n:"Jeera Aloo",e:"🥔",s:"1 bowl (150g)",cal:190,p:3,c:26,f:9,fib:4,cat:"Vegetables"},
+ // Breads
+ {n:"Roti / Chapati",e:"🫓",s:"1 piece",cal:110,p:3,c:20,f:2,fib:3,cat:"Breads"},
+ {n:"Tandoori Roti",e:"🫓",s:"1 piece",cal:130,p:4,c:24,f:2,fib:3,cat:"Breads"},
+ {n:"Butter Naan",e:"🫓",s:"1 piece",cal:260,p:7,c:42,f:7,fib:2,cat:"Breads"},
+ {n:"Plain Naan",e:"🫓",s:"1 piece",cal:220,p:6,c:40,f:4,fib:2,cat:"Breads"},
+ {n:"Aloo Paratha",e:"🫓",s:"1 piece",cal:280,p:6,c:36,f:12,fib:4,cat:"Breads"},
+ {n:"Plain Paratha",e:"🫓",s:"1 piece",cal:230,p:5,c:30,f:10,fib:3,cat:"Breads"},
+ {n:"Poori",e:"🫓",s:"1 piece",cal:100,p:2,c:12,f:5,fib:1,cat:"Breads"},
+ {n:"Bhatura",e:"🫓",s:"1 piece",cal:200,p:5,c:28,f:8,fib:1,cat:"Breads"},
+ {n:"Missi Roti",e:"🫓",s:"1 piece",cal:150,p:5,c:22,f:4,fib:4,cat:"Breads"},
+ // Rice
+ {n:"Steamed Rice",e:"🍚",s:"1 cup (150g)",cal:200,p:4,c:44,f:0,fib:1,cat:"Rice & Grains"},
+ {n:"Jeera Rice",e:"🍚",s:"1 cup (150g)",cal:240,p:4,c:44,f:6,fib:1,cat:"Rice & Grains"},
+ {n:"Veg Biryani",e:"🍛",s:"1 plate (250g)",cal:380,p:9,c:58,f:12,fib:5,cat:"Rice & Grains"},
+ {n:"Chicken Biryani",e:"🍛",s:"1 plate (300g)",cal:490,p:24,c:60,f:16,fib:3,cat:"Rice & Grains"},
+ {n:"Veg Pulao",e:"🍚",s:"1 plate (200g)",cal:300,p:6,c:48,f:9,fib:4,cat:"Rice & Grains"},
+ {n:"Curd Rice",e:"🍚",s:"1 bowl (200g)",cal:260,p:8,c:40,f:7,fib:1,cat:"Rice & Grains"},
+ {n:"Lemon Rice",e:"🍚",s:"1 plate (200g)",cal:290,p:5,c:46,f:9,fib:2,cat:"Rice & Grains"},
+ {n:"Khichdi",e:"🍲",s:"1 bowl (250g)",cal:280,p:10,c:48,f:5,fib:5,cat:"Rice & Grains"},
+ // South Indian
+ {n:"Plain Dosa",e:"🥞",s:"1 piece",cal:170,p:4,c:28,f:5,fib:1,cat:"South Indian"},
+ {n:"Masala Dosa",e:"🥞",s:"1 piece",cal:300,p:6,c:44,f:11,fib:3,cat:"South Indian"},
+ {n:"Idli",e:"⚪",s:"2 pieces",cal:120,p:4,c:24,f:1,fib:2,cat:"South Indian"},
+ {n:"Medu Vada",e:"🍩",s:"2 pieces",cal:280,p:8,c:30,f:14,fib:3,cat:"South Indian"},
+ {n:"Uttapam",e:"🥞",s:"1 piece",cal:220,p:6,c:34,f:7,fib:2,cat:"South Indian"},
+ {n:"Upma",e:"🥣",s:"1 bowl (200g)",cal:250,p:6,c:38,f:9,fib:3,cat:"South Indian"},
+ {n:"Rava Idli",e:"⚪",s:"2 pieces",cal:150,p:4,c:26,f:3,fib:2,cat:"South Indian"},
+ {n:"Pongal",e:"🥣",s:"1 bowl (200g)",cal:290,p:8,c:44,f:9,fib:3,cat:"South Indian"},
+ // Snacks / Street
+ {n:"Samosa",e:"🥟",s:"1 piece",cal:260,p:4,c:30,f:14,fib:2,cat:"Snacks"},
+ {n:"Kachori",e:"🥟",s:"1 piece",cal:230,p:5,c:26,f:12,fib:2,cat:"Snacks"},
+ {n:"Pav Bhaji",e:"🍞",s:"1 plate",cal:400,p:9,c:52,f:18,fib:6,cat:"Snacks"},
+ {n:"Vada Pav",e:"🍔",s:"1 piece",cal:290,p:6,c:40,f:12,fib:3,cat:"Snacks"},
+ {n:"Dhokla",e:"🟡",s:"3 pieces",cal:160,p:6,c:26,f:3,fib:2,cat:"Snacks"},
+ {n:"Pakora (Mixed)",e:"🧆",s:"6 pieces",cal:300,p:7,c:26,f:19,fib:3,cat:"Snacks"},
+ {n:"Aloo Tikki",e:"🥔",s:"2 pieces",cal:220,p:4,c:30,f:10,fib:3,cat:"Snacks"},
+ {n:"Bhel Puri",e:"🥗",s:"1 plate",cal:200,p:5,c:32,f:6,fib:4,cat:"Snacks"},
+ {n:"Pani Puri",e:"🥟",s:"6 pieces",cal:180,p:4,c:32,f:4,fib:3,cat:"Snacks"},
+ {n:"Sev Puri",e:"🥗",s:"1 plate",cal:250,p:5,c:34,f:11,fib:3,cat:"Snacks"},
+ {n:"Poha",e:"🍚",s:"1 bowl (180g)",cal:230,p:5,c:38,f:7,fib:3,cat:"Snacks"},
+ {n:"Maggi Noodles",e:"🍜",s:"1 pack",cal:310,p:7,c:44,f:12,fib:2,cat:"Snacks"},
+ {n:"Sandwich (Veg)",e:"🥪",s:"1 (2 slices)",cal:250,p:8,c:34,f:9,fib:4,cat:"Snacks"},
+ {n:"Bread Pakora",e:"🥪",s:"2 pieces",cal:300,p:6,c:34,f:16,fib:2,cat:"Snacks"},
+ // Non-veg
+ {n:"Butter Chicken",e:"🍗",s:"1 bowl (200g)",cal:380,p:24,c:12,f:26,fib:2,cat:"Non-Veg"},
+ {n:"Chicken Curry",e:"🍗",s:"1 bowl (200g)",cal:300,p:26,c:8,f:18,fib:2,cat:"Non-Veg"},
+ {n:"Chicken Tikka",e:"🍢",s:"6 pieces",cal:250,p:32,c:6,f:11,fib:1,cat:"Non-Veg"},
+ {n:"Tandoori Chicken",e:"🍗",s:"2 pieces",cal:300,p:34,c:4,f:16,fib:0,cat:"Non-Veg"},
+ {n:"Egg Curry",e:"🥚",s:"2 eggs + gravy",cal:290,p:16,c:10,f:20,fib:2,cat:"Eggs"},
+ {n:"Boiled Egg",e:"🥚",s:"1 egg",cal:78,p:6,c:1,f:5,fib:0,cat:"Eggs"},
+ {n:"Omelette (2 egg)",e:"🍳",s:"2 eggs",cal:200,p:13,c:2,f:15,fib:0,cat:"Eggs"},
+ {n:"Fish Curry",e:"🐟",s:"1 bowl (200g)",cal:250,p:24,c:8,f:14,fib:1,cat:"Non-Veg"},
+ {n:"Grilled Fish",e:"🐟",s:"1 fillet (150g)",cal:220,p:30,c:0,f:11,fib:0,cat:"Non-Veg"},
+ {n:"Mutton Curry",e:"🍖",s:"1 bowl (200g)",cal:380,p:26,c:8,f:26,fib:2,cat:"Non-Veg"},
+ {n:"Chicken Breast (grilled)",e:"🍗",s:"150g",cal:250,p:46,c:0,f:6,fib:0,cat:"Non-Veg"},
+ {n:"Prawn Masala",e:"🦐",s:"1 bowl (180g)",cal:240,p:24,c:10,f:12,fib:1,cat:"Non-Veg"},
+ // Dairy / Breakfast
+ {n:"Paneer (raw, 100g)",e:"🧀",s:"100g",cal:265,p:18,c:6,f:20,fib:0,cat:"Dairy & Basics"},
+ {n:"Curd / Dahi",e:"🥛",s:"1 bowl (150g)",cal:100,p:6,c:8,f:5,fib:0,cat:"Dairy & Basics"},
+ {n:"Greek Yogurt",e:"🥛",s:"150g",cal:130,p:15,c:8,f:4,fib:0,cat:"Dairy & Basics"},
+ {n:"Milk (full cream)",e:"🥛",s:"1 glass (250ml)",cal:150,p:8,c:12,f:8,fib:0,cat:"Dairy & Basics"},
+ {n:"Milk (toned)",e:"🥛",s:"1 glass (250ml)",cal:110,p:8,c:12,f:4,fib:0,cat:"Dairy & Basics"},
+ {n:"Buttermilk / Chaas",e:"🥛",s:"1 glass (250ml)",cal:60,p:3,c:6,f:2,fib:0,cat:"Dairy & Basics"},
+ {n:"Lassi (sweet)",e:"🥤",s:"1 glass (250ml)",cal:220,p:6,c:34,f:6,fib:0,cat:"Dairy & Basics"},
+ {n:"Cheese slice",e:"🧀",s:"1 slice",cal:70,p:4,c:1,f:5,fib:0,cat:"Dairy & Basics"},
+ {n:"Butter",e:"🧈",s:"1 tsp",cal:35,p:0,c:0,f:4,fib:0,cat:"Dairy & Basics"},
+ {n:"Ghee",e:"🫕",s:"1 tsp",cal:45,p:0,c:0,f:5,fib:0,cat:"Dairy & Basics"},
+ {n:"Bread (white)",e:"🍞",s:"1 slice",cal:70,p:2,c:13,f:1,fib:1,cat:"Dairy & Basics"},
+ {n:"Brown Bread",e:"🍞",s:"1 slice",cal:75,p:3,c:12,f:1,fib:2,cat:"Dairy & Basics"},
+ {n:"Oats (cooked)",e:"🥣",s:"1 bowl (200g)",cal:150,p:5,c:27,f:3,fib:4,cat:"Dairy & Basics"},
+ {n:"Cornflakes + milk",e:"🥣",s:"1 bowl",cal:210,p:7,c:38,f:4,fib:2,cat:"Dairy & Basics"},
+ {n:"Peanut Butter",e:"🥜",s:"1 tbsp",cal:95,p:4,c:3,f:8,fib:1,cat:"Dairy & Basics"},
+ // Fruits
+ {n:"Banana",e:"🍌",s:"1 medium",cal:105,p:1,c:27,f:0,fib:3,cat:"Fruits"},
+ {n:"Apple",e:"🍎",s:"1 medium",cal:95,p:0,c:25,f:0,fib:4,cat:"Fruits"},
+ {n:"Mango",e:"🥭",s:"1 medium",cal:200,p:3,c:50,f:1,fib:5,cat:"Fruits"},
+ {n:"Orange",e:"🍊",s:"1 medium",cal:62,p:1,c:15,f:0,fib:3,cat:"Fruits"},
+ {n:"Papaya",e:"🫐",s:"1 cup (150g)",cal:60,p:1,c:15,f:0,fib:3,cat:"Fruits"},
+ {n:"Watermelon",e:"🍉",s:"1 cup (150g)",cal:46,p:1,c:11,f:0,fib:1,cat:"Fruits"},
+ {n:"Grapes",e:"🍇",s:"1 cup (100g)",cal:69,p:1,c:18,f:0,fib:1,cat:"Fruits"},
+ {n:"Pomegranate",e:"🔴",s:"1/2 cup (90g)",cal:72,p:1,c:16,f:1,fib:3,cat:"Fruits"},
+ {n:"Guava",e:"🟢",s:"1 medium",cal:70,p:3,c:14,f:1,fib:5,cat:"Fruits"},
+ {n:"Dates",e:"🌴",s:"3 pieces",cal:66,p:1,c:18,f:0,fib:2,cat:"Fruits"},
+ // Salads / Veg
+ {n:"Green Salad",e:"🥗",s:"1 plate",cal:50,p:2,c:10,f:0,fib:4,cat:"Salads & Sides"},
+ {n:"Sprouts Salad",e:"🌱",s:"1 bowl (150g)",cal:140,p:9,c:22,f:2,fib:7,cat:"Salads & Sides"},
+ {n:"Cucumber",e:"🥒",s:"1 cup",cal:16,p:1,c:4,f:0,fib:1,cat:"Salads & Sides"},
+ {n:"Boiled Chana (chickpeas)",e:"🫘",s:"1 bowl (150g)",cal:210,p:11,c:32,f:4,fib:9,cat:"Salads & Sides"},
+ {n:"Papad (roasted)",e:"🟤",s:"1 piece",cal:40,p:2,c:6,f:1,fib:1,cat:"Salads & Sides"},
+ {n:"Pickle (Achar)",e:"🥫",s:"1 tbsp",cal:30,p:0,c:2,f:2,fib:0,cat:"Salads & Sides"},
+ {n:"Raita",e:"🥣",s:"1 bowl (150g)",cal:90,p:4,c:8,f:5,fib:1,cat:"Salads & Sides"},
+ // Sweets
+ {n:"Gulab Jamun",e:"🟤",s:"2 pieces",cal:300,p:4,c:44,f:12,fib:0,cat:"Sweets"},
+ {n:"Jalebi",e:"🟠",s:"2 pieces",cal:250,p:2,c:44,f:8,fib:0,cat:"Sweets"},
+ {n:"Rasgulla",e:"⚪",s:"2 pieces",cal:190,p:4,c:38,f:3,fib:0,cat:"Sweets"},
+ {n:"Kheer",e:"🍮",s:"1 bowl (150g)",cal:250,p:6,c:40,f:8,fib:1,cat:"Sweets"},
+ {n:"Halwa (Gajar)",e:"🥕",s:"1 bowl (120g)",cal:290,p:5,c:36,f:14,fib:2,cat:"Sweets"},
+ {n:"Ladoo (Besan)",e:"🟡",s:"1 piece",cal:180,p:3,c:22,f:9,fib:1,cat:"Sweets"},
+ {n:"Barfi",e:"⬜",s:"1 piece",cal:170,p:3,c:20,f:9,fib:0,cat:"Sweets"},
+ {n:"Ice Cream (vanilla)",e:"🍨",s:"1 scoop",cal:140,p:2,c:16,f:7,fib:0,cat:"Sweets"},
+ {n:"Dark Chocolate",e:"🍫",s:"2 squares (20g)",cal:110,p:1,c:9,f:8,fib:2,cat:"Sweets"},
+ // Beverages
+ {n:"Masala Chai (w/ sugar)",e:"☕",s:"1 cup",cal:90,p:2,c:12,f:3,fib:0,cat:"Beverages"},
+ {n:"Coffee (w/ milk+sugar)",e:"☕",s:"1 cup",cal:80,p:2,c:11,f:3,fib:0,cat:"Beverages"},
+ {n:"Black Coffee",e:"☕",s:"1 cup",cal:5,p:0,c:1,f:0,fib:0,cat:"Beverages"},
+ {n:"Green Tea",e:"🍵",s:"1 cup",cal:2,p:0,c:0,f:0,fib:0,cat:"Beverages"},
+ {n:"Cola / Soft Drink",e:"🥤",s:"1 can (330ml)",cal:140,p:0,c:39,f:0,fib:0,cat:"Beverages"},
+ {n:"Fresh Lime Soda",e:"🍋",s:"1 glass",cal:80,p:0,c:20,f:0,fib:0,cat:"Beverages"},
+ {n:"Orange Juice",e:"🧃",s:"1 glass (250ml)",cal:112,p:2,c:26,f:0,fib:0,cat:"Beverages"},
+ {n:"Coconut Water",e:"🥥",s:"1 glass (250ml)",cal:46,p:2,c:9,f:0,fib:3,cat:"Beverages"},
+ {n:"Protein Shake (whey)",e:"🥤",s:"1 scoop + water",cal:120,p:24,c:3,f:2,fib:1,cat:"Beverages"},
+ {n:"Beer",e:"🍺",s:"1 pint (500ml)",cal:210,p:2,c:18,f:0,fib:0,cat:"Beverages"},
+ // Dry fruits / nuts
+ {n:"Almonds",e:"🌰",s:"10 pieces",cal:70,p:3,c:2,f:6,fib:1,cat:"Nuts & Seeds"},
+ {n:"Cashews",e:"🥜",s:"10 pieces",cal:90,p:3,c:5,f:7,fib:1,cat:"Nuts & Seeds"},
+ {n:"Walnuts",e:"🌰",s:"4 halves",cal:100,p:2,c:2,f:10,fib:1,cat:"Nuts & Seeds"},
+ {n:"Peanuts (roasted)",e:"🥜",s:"handful (30g)",cal:170,p:7,c:5,f:14,fib:3,cat:"Nuts & Seeds"},
+ {n:"Chia Seeds",e:"⚫",s:"1 tbsp",cal:60,p:2,c:5,f:4,fib:5,cat:"Nuts & Seeds"},
+ {n:"Flax Seeds",e:"🟤",s:"1 tbsp",cal:55,p:2,c:3,f:4,fib:3,cat:"Nuts & Seeds"},
+ // ---------------- Eggs ----------------
+ {n:"Scrambled Eggs",e:"🍳",s:"2 eggs + butter",cal:220,p:14,c:2,f:17,fib:0,cat:"Eggs"},
+ {n:"Fried Egg",e:"🍳",s:"1 egg",cal:90,p:6,c:0,f:7,fib:0,cat:"Eggs"},
+ {n:"Half Fry (sunny side up)",e:"🍳",s:"2 eggs",cal:180,p:12,c:1,f:14,fib:0,cat:"Eggs"},
+ {n:"Poached Egg",e:"🥚",s:"1 egg",cal:72,p:6,c:0,f:5,fib:0,cat:"Eggs"},
+ {n:"Egg Bhurji",e:"🍳",s:"2 eggs",cal:240,p:14,c:6,f:18,fib:1,cat:"Eggs"},
+ {n:"Masala Omelette",e:"🍳",s:"2 eggs",cal:250,p:14,c:7,f:19,fib:1,cat:"Eggs"},
+ {n:"Cheese Omelette",e:"🧀",s:"3 eggs + cheese",cal:380,p:24,c:3,f:30,fib:0,cat:"Eggs"},
+ {n:"Egg White Omelette",e:"⚪",s:"4 whites",cal:90,p:18,c:2,f:1,fib:0,cat:"Eggs"},
+ {n:"Boiled Egg White",e:"⚪",s:"1 white",cal:17,p:4,c:0,f:0,fib:0,cat:"Eggs"},
+ {n:"Egg Yolk",e:"🟡",s:"1 yolk",cal:55,p:3,c:1,f:5,fib:0,cat:"Eggs"},
+ {n:"Shakshuka",e:"🍅",s:"2 eggs + sauce",cal:280,p:16,c:14,f:18,fib:4,cat:"Eggs"},
+ {n:"Eggs Benedict",e:"🥚",s:"1 serving",cal:430,p:20,c:26,f:28,fib:1,cat:"Eggs"},
+ {n:"Deviled Eggs",e:"🥚",s:"2 halves",cal:130,p:6,c:1,f:12,fib:0,cat:"Eggs"},
+ {n:"Egg Salad",e:"🥗",s:"1 bowl (150g)",cal:300,p:12,c:3,f:26,fib:1,cat:"Eggs"},
+ {n:"Frittata",e:"🍳",s:"1 slice",cal:200,p:13,c:4,f:14,fib:1,cat:"Eggs"},
+ {n:"Quiche Lorraine",e:"🥧",s:"1 slice",cal:420,p:14,c:26,f:29,fib:1,cat:"Eggs"},
+ {n:"Egg Fried Rice",e:"🍚",s:"1 plate (250g)",cal:400,p:12,c:56,f:13,fib:3,cat:"Eggs"},
+ {n:"Egg Sandwich",e:"🥪",s:"1 sandwich",cal:300,p:14,c:30,f:13,fib:3,cat:"Eggs"},
+ {n:"Egg Roll / Kathi Roll",e:"🌯",s:"1 roll",cal:350,p:14,c:36,f:16,fib:3,cat:"Eggs"},
+ {n:"Anda Bhurji Pav",e:"🍞",s:"1 plate",cal:400,p:16,c:40,f:20,fib:3,cat:"Eggs"},
+ {n:"Egg Maggi",e:"🍜",s:"1 pack + 1 egg",cal:390,p:13,c:45,f:17,fib:2,cat:"Eggs"},
+ {n:"Scotch Egg",e:"🥚",s:"1 piece",cal:300,p:16,c:14,f:20,fib:1,cat:"Eggs"},
+
+ // ---------------- Avocado ----------------
+ {n:"Avocado (whole)",e:"🥑",s:"1 medium (150g)",cal:240,p:3,c:13,f:22,fib:10,cat:"Avocado"},
+ {n:"Avocado (half)",e:"🥑",s:"1/2 medium",cal:120,p:2,c:6,f:11,fib:5,cat:"Avocado"},
+ {n:"Avocado Toast",e:"🥑",s:"1 slice",cal:250,p:7,c:26,f:14,fib:7,cat:"Avocado"},
+ {n:"Avocado Toast + Egg",e:"🥑",s:"1 slice + 1 egg",cal:340,p:13,c:26,f:21,fib:7,cat:"Avocado"},
+ {n:"Guacamole",e:"🥑",s:"1/2 cup",cal:190,p:2,c:10,f:17,fib:7,cat:"Avocado"},
+ {n:"Guacamole + Nachos",e:"🥑",s:"1 plate",cal:480,p:8,c:46,f:30,fib:9,cat:"Avocado"},
+ {n:"Avocado Smoothie",e:"🥤",s:"1 glass (300ml)",cal:320,p:6,c:32,f:20,fib:8,cat:"Avocado"},
+ {n:"Avocado Salad",e:"🥗",s:"1 bowl",cal:260,p:5,c:16,f:20,fib:9,cat:"Avocado"},
+ {n:"Avocado + Chicken Salad",e:"🥗",s:"1 bowl",cal:380,p:32,c:12,f:24,fib:8,cat:"Avocado"},
+ {n:"Avocado Sushi Roll",e:"🍣",s:"6 pieces",cal:260,p:5,c:44,f:7,fib:5,cat:"Avocado"},
+ {n:"Avocado Egg Bowl",e:"🥑",s:"1 bowl",cal:380,p:18,c:14,f:28,fib:9,cat:"Avocado"},
+
+ // ---------------- Pasta & Italian ----------------
+ {n:"Spaghetti Bolognese",e:"🍝",s:"1 plate (300g)",cal:580,p:28,c:68,f:22,fib:5,cat:"Pasta & Italian"},
+ {n:"Spaghetti Carbonara",e:"🍝",s:"1 plate (300g)",cal:650,p:26,c:68,f:31,fib:3,cat:"Pasta & Italian"},
+ {n:"Spaghetti Aglio e Olio",e:"🍝",s:"1 plate (250g)",cal:480,p:13,c:66,f:18,fib:4,cat:"Pasta & Italian"},
+ {n:"Spaghetti Napolitana",e:"🍝",s:"1 plate (300g)",cal:420,p:13,c:70,f:10,fib:6,cat:"Pasta & Italian"},
+ {n:"Spaghetti with Meatballs",e:"🍝",s:"1 plate (350g)",cal:640,p:32,c:70,f:25,fib:5,cat:"Pasta & Italian"},
+ {n:"Spaghetti (plain, boiled)",e:"🍝",s:"1 cup (140g)",cal:220,p:8,c:43,f:1,fib:3,cat:"Pasta & Italian"},
+ {n:"Whole Wheat Pasta",e:"🍝",s:"1 cup (140g)",cal:210,p:8,c:40,f:2,fib:6,cat:"Pasta & Italian"},
+ {n:"Penne Arrabbiata",e:"🍝",s:"1 plate (300g)",cal:450,p:13,c:72,f:12,fib:6,cat:"Pasta & Italian"},
+ {n:"Penne Alfredo",e:"🍝",s:"1 plate (300g)",cal:700,p:20,c:68,f:40,fib:3,cat:"Pasta & Italian"},
+ {n:"White Sauce Pasta",e:"🍝",s:"1 plate (250g)",cal:520,p:16,c:62,f:23,fib:3,cat:"Pasta & Italian"},
+ {n:"Red Sauce Pasta",e:"🍝",s:"1 plate (250g)",cal:430,p:12,c:68,f:12,fib:5,cat:"Pasta & Italian"},
+ {n:"Pesto Pasta",e:"🌿",s:"1 plate (250g)",cal:560,p:16,c:60,f:28,fib:4,cat:"Pasta & Italian"},
+ {n:"Mac and Cheese",e:"🧀",s:"1 bowl (250g)",cal:560,p:21,c:58,f:27,fib:2,cat:"Pasta & Italian"},
+ {n:"Lasagna",e:"🍲",s:"1 slice (250g)",cal:500,p:26,c:40,f:26,fib:4,cat:"Pasta & Italian"},
+ {n:"Ravioli (cheese)",e:"🥟",s:"8 pieces",cal:380,p:16,c:46,f:14,fib:3,cat:"Pasta & Italian"},
+ {n:"Gnocchi",e:"🥔",s:"1 plate (250g)",cal:420,p:11,c:66,f:13,fib:3,cat:"Pasta & Italian"},
+ {n:"Mushroom Risotto",e:"🍚",s:"1 plate (250g)",cal:430,p:10,c:60,f:16,fib:3,cat:"Pasta & Italian"},
+ {n:"Margherita Pizza",e:"🍕",s:"2 slices",cal:500,p:20,c:62,f:19,fib:4,cat:"Pasta & Italian"},
+ {n:"Pepperoni Pizza",e:"🍕",s:"2 slices",cal:600,p:26,c:60,f:28,fib:4,cat:"Pasta & Italian"},
+ {n:"Veg Pizza",e:"🍕",s:"2 slices",cal:480,p:18,c:62,f:17,fib:5,cat:"Pasta & Italian"},
+ {n:"Garlic Bread",e:"🥖",s:"2 pieces",cal:220,p:6,c:28,f:10,fib:2,cat:"Pasta & Italian"},
+ {n:"Bruschetta",e:"🍅",s:"2 pieces",cal:190,p:5,c:24,f:8,fib:2,cat:"Pasta & Italian"},
+ {n:"Caprese Salad",e:"🥗",s:"1 plate",cal:280,p:14,c:8,f:21,fib:2,cat:"Pasta & Italian"},
+ {n:"Tiramisu",e:"🍰",s:"1 slice",cal:350,p:6,c:38,f:19,fib:1,cat:"Pasta & Italian"},
+
+ // ---------------- Chinese & Asian ----------------
+ {n:"Veg Fried Rice",e:"🍚",s:"1 plate (250g)",cal:340,p:8,c:56,f:9,fib:4,cat:"Chinese & Asian"},
+ {n:"Chicken Fried Rice",e:"🍚",s:"1 plate (300g)",cal:450,p:22,c:58,f:14,fib:3,cat:"Chinese & Asian"},
+ {n:"Hakka Noodles",e:"🍜",s:"1 plate (250g)",cal:380,p:9,c:56,f:13,fib:4,cat:"Chinese & Asian"},
+ {n:"Chicken Chow Mein",e:"🍜",s:"1 plate (300g)",cal:480,p:24,c:58,f:16,fib:4,cat:"Chinese & Asian"},
+ {n:"Veg Manchurian",e:"🧆",s:"6 balls + gravy",cal:340,p:8,c:38,f:17,fib:4,cat:"Chinese & Asian"},
+ {n:"Chilli Paneer",e:"🧀",s:"1 plate (200g)",cal:400,p:18,c:22,f:26,fib:3,cat:"Chinese & Asian"},
+ {n:"Chilli Chicken",e:"🍗",s:"1 plate (200g)",cal:350,p:26,c:18,f:19,fib:2,cat:"Chinese & Asian"},
+ {n:"Veg Momos",e:"🥟",s:"6 pieces",cal:220,p:6,c:38,f:5,fib:3,cat:"Chinese & Asian"},
+ {n:"Chicken Momos",e:"🥟",s:"6 pieces",cal:290,p:16,c:34,f:9,fib:2,cat:"Chinese & Asian"},
+ {n:"Spring Roll",e:"🥢",s:"2 pieces",cal:240,p:5,c:28,f:12,fib:3,cat:"Chinese & Asian"},
+ {n:"Dim Sum (steamed)",e:"🥟",s:"4 pieces",cal:200,p:10,c:24,f:7,fib:2,cat:"Chinese & Asian"},
+ {n:"Sweet & Sour Chicken",e:"🍗",s:"1 plate (250g)",cal:430,p:24,c:44,f:17,fib:2,cat:"Chinese & Asian"},
+ {n:"Kung Pao Chicken",e:"🌶️",s:"1 plate (250g)",cal:420,p:28,c:20,f:26,fib:3,cat:"Chinese & Asian"},
+ {n:"Teriyaki Chicken",e:"🍗",s:"1 plate (200g)",cal:340,p:30,c:24,f:13,fib:1,cat:"Chinese & Asian"},
+ {n:"Pad Thai",e:"🍜",s:"1 plate (300g)",cal:560,p:20,c:72,f:20,fib:4,cat:"Chinese & Asian"},
+ {n:"Ramen (chicken)",e:"🍜",s:"1 bowl (450g)",cal:480,p:24,c:62,f:16,fib:4,cat:"Chinese & Asian"},
+ {n:"Pho (beef)",e:"🍜",s:"1 bowl (450g)",cal:390,p:26,c:52,f:8,fib:3,cat:"Chinese & Asian"},
+ {n:"Sushi (salmon nigiri)",e:"🍣",s:"6 pieces",cal:290,p:18,c:42,f:5,fib:1,cat:"Chinese & Asian"},
+ {n:"California Roll",e:"🍣",s:"6 pieces",cal:255,p:7,c:38,f:7,fib:3,cat:"Chinese & Asian"},
+ {n:"Bibimbap",e:"🍲",s:"1 bowl (400g)",cal:560,p:24,c:78,f:16,fib:6,cat:"Chinese & Asian"},
+ {n:"Stir-fried Vegetables",e:"🥦",s:"1 bowl (200g)",cal:150,p:5,c:16,f:8,fib:5,cat:"Chinese & Asian"},
+
+ // ---------------- Fast Food & World ----------------
+ {n:"Veg Burger",e:"🍔",s:"1 burger",cal:400,p:12,c:52,f:16,fib:4,cat:"Fast Food & World"},
+ {n:"Chicken Burger",e:"🍔",s:"1 burger",cal:490,p:25,c:48,f:22,fib:3,cat:"Fast Food & World"},
+ {n:"Cheeseburger",e:"🍔",s:"1 burger",cal:540,p:28,c:44,f:28,fib:3,cat:"Fast Food & World"},
+ {n:"French Fries",e:"🍟",s:"medium (110g)",cal:340,p:4,c:44,f:17,fib:4,cat:"Fast Food & World"},
+ {n:"Chicken Nuggets",e:"🍗",s:"6 pieces",cal:280,p:14,c:18,f:17,fib:1,cat:"Fast Food & World"},
+ {n:"Fried Chicken",e:"🍗",s:"2 pieces",cal:480,p:34,c:18,f:30,fib:1,cat:"Fast Food & World"},
+ {n:"Hot Dog",e:"🌭",s:"1 hot dog",cal:320,p:12,c:28,f:18,fib:2,cat:"Fast Food & World"},
+ {n:"Club Sandwich",e:"🥪",s:"1 sandwich",cal:520,p:26,c:48,f:25,fib:4,cat:"Fast Food & World"},
+ {n:"Grilled Chicken Sandwich",e:"🥪",s:"1 sandwich",cal:380,p:30,c:38,f:11,fib:3,cat:"Fast Food & World"},
+ {n:"Caesar Salad (chicken)",e:"🥗",s:"1 bowl",cal:380,p:30,c:12,f:24,fib:3,cat:"Fast Food & World"},
+ {n:"Greek Salad",e:"🥗",s:"1 bowl",cal:230,p:7,c:12,f:17,fib:4,cat:"Fast Food & World"},
+ {n:"Coleslaw",e:"🥬",s:"1 cup",cal:180,p:2,c:14,f:14,fib:2,cat:"Fast Food & World"},
+ {n:"Falafel Wrap",e:"🌯",s:"1 wrap",cal:520,p:16,c:62,f:23,fib:9,cat:"Fast Food & World"},
+ {n:"Hummus",e:"🫓",s:"1/2 cup",cal:210,p:6,c:16,f:14,fib:6,cat:"Fast Food & World"},
+ {n:"Chicken Shawarma",e:"🌯",s:"1 wrap",cal:480,p:30,c:44,f:20,fib:4,cat:"Fast Food & World"},
+ {n:"Burrito (chicken)",e:"🌯",s:"1 burrito",cal:620,p:30,c:70,f:24,fib:8,cat:"Fast Food & World"},
+ {n:"Tacos (2)",e:"🌮",s:"2 tacos",cal:380,p:18,c:36,f:18,fib:5,cat:"Fast Food & World"},
+ {n:"Quesadilla",e:"🫓",s:"1 piece",cal:450,p:20,c:38,f:24,fib:3,cat:"Fast Food & World"},
+ {n:"Nachos with Cheese",e:"🧀",s:"1 plate",cal:520,p:12,c:52,f:29,fib:5,cat:"Fast Food & World"},
+ {n:"Fish and Chips",e:"🐟",s:"1 plate",cal:760,p:32,c:72,f:38,fib:5,cat:"Fast Food & World"},
+ {n:"Grilled Steak",e:"🥩",s:"200g",cal:440,p:52,c:0,f:25,fib:0,cat:"Fast Food & World"},
+ {n:"Roast Chicken",e:"🍗",s:"1 leg quarter",cal:300,p:32,c:0,f:19,fib:0,cat:"Fast Food & World"},
+
+ // ---------------- Western Breakfast ----------------
+ {n:"Pancakes",e:"🥞",s:"3 pancakes",cal:430,p:10,c:66,f:14,fib:2,cat:"Western Breakfast"},
+ {n:"Waffle",e:"🧇",s:"1 waffle",cal:290,p:7,c:36,f:13,fib:2,cat:"Western Breakfast"},
+ {n:"French Toast",e:"🍞",s:"2 slices",cal:340,p:12,c:38,f:15,fib:2,cat:"Western Breakfast"},
+ {n:"Croissant",e:"🥐",s:"1 piece",cal:270,p:6,c:31,f:14,fib:2,cat:"Western Breakfast"},
+ {n:"Bagel + Cream Cheese",e:"🥯",s:"1 bagel",cal:400,p:13,c:56,f:13,fib:3,cat:"Western Breakfast"},
+ {n:"Muesli + Milk",e:"🥣",s:"1 bowl",cal:300,p:11,c:48,f:7,fib:6,cat:"Western Breakfast"},
+ {n:"Granola Bowl",e:"🥣",s:"1 bowl",cal:380,p:10,c:54,f:14,fib:6,cat:"Western Breakfast"},
+ {n:"Overnight Oats",e:"🥣",s:"1 jar (250g)",cal:330,p:13,c:48,f:9,fib:7,cat:"Western Breakfast"},
+ {n:"Smoothie Bowl",e:"🍧",s:"1 bowl",cal:340,p:9,c:58,f:9,fib:8,cat:"Western Breakfast"},
+ {n:"Yogurt Parfait",e:"🍨",s:"1 cup",cal:280,p:12,c:42,f:7,fib:3,cat:"Western Breakfast"},
+ {n:"Hash Browns",e:"🥔",s:"2 pieces",cal:290,p:3,c:32,f:17,fib:3,cat:"Western Breakfast"},
+ {n:"Baked Beans",e:"🫘",s:"1/2 cup",cal:120,p:6,c:22,f:1,fib:6,cat:"Western Breakfast"},
+ {n:"Sausages",e:"🌭",s:"2 pieces",cal:280,p:14,c:2,f:24,fib:0,cat:"Western Breakfast"},
+ {n:"Bacon",e:"🥓",s:"2 strips",cal:90,p:6,c:0,f:7,fib:0,cat:"Western Breakfast"},
+ {n:"Toast + Butter",e:"🍞",s:"2 slices",cal:210,p:5,c:26,f:10,fib:2,cat:"Western Breakfast"},
+
+ // ---------------- Soups ----------------
+ {n:"Tomato Soup",e:"🍅",s:"1 bowl (250ml)",cal:120,p:3,c:20,f:4,fib:3,cat:"Soups"},
+ {n:"Sweet Corn Soup",e:"🌽",s:"1 bowl (250ml)",cal:140,p:5,c:26,f:2,fib:3,cat:"Soups"},
+ {n:"Hot & Sour Soup",e:"🌶️",s:"1 bowl (250ml)",cal:110,p:6,c:14,f:3,fib:2,cat:"Soups"},
+ {n:"Manchow Soup",e:"🍜",s:"1 bowl (250ml)",cal:160,p:5,c:20,f:7,fib:3,cat:"Soups"},
+ {n:"Chicken Clear Soup",e:"🍲",s:"1 bowl (250ml)",cal:80,p:10,c:4,f:2,fib:1,cat:"Soups"},
+ {n:"Mushroom Soup",e:"🍄",s:"1 bowl (250ml)",cal:150,p:4,c:14,f:9,fib:2,cat:"Soups"},
+ {n:"Broccoli Soup",e:"🥦",s:"1 bowl (250ml)",cal:140,p:6,c:14,f:7,fib:4,cat:"Soups"},
+ {n:"Minestrone Soup",e:"🥣",s:"1 bowl (250ml)",cal:130,p:6,c:20,f:3,fib:5,cat:"Soups"},
+ {n:"Lentil Soup",e:"🍲",s:"1 bowl (250ml)",cal:180,p:11,c:28,f:3,fib:8,cat:"Soups"},
+
+ // ---------------- Protein & Fitness ----------------
+ {n:"Tofu",e:"⬜",s:"100g",cal:145,p:16,c:4,f:9,fib:2,cat:"Protein & Fitness"},
+ {n:"Tempeh",e:"🟫",s:"100g",cal:190,p:19,c:9,f:11,fib:6,cat:"Protein & Fitness"},
+ {n:"Soya Chunks (dry)",e:"🟤",s:"50g",cal:170,p:26,c:16,f:1,fib:6,cat:"Protein & Fitness"},
+ {n:"Cottage Cheese (low fat)",e:"🥛",s:"1 cup (225g)",cal:180,p:28,c:8,f:5,fib:0,cat:"Protein & Fitness"},
+ {n:"Protein Bar",e:"🍫",s:"1 bar (60g)",cal:220,p:20,c:22,f:7,fib:5,cat:"Protein & Fitness"},
+ {n:"Whey Isolate",e:"🥤",s:"1 scoop (30g)",cal:110,p:25,c:1,f:0,fib:0,cat:"Protein & Fitness"},
+ {n:"Mass Gainer",e:"🥤",s:"1 scoop (100g)",cal:380,p:20,c:70,f:3,fib:2,cat:"Protein & Fitness"},
+ {n:"Boiled Chicken",e:"🍗",s:"100g",cal:165,p:31,c:0,f:4,fib:0,cat:"Protein & Fitness"},
+ {n:"Canned Tuna",e:"🐟",s:"100g (in water)",cal:110,p:25,c:0,f:1,fib:0,cat:"Protein & Fitness"},
+ {n:"Grilled Salmon",e:"🐟",s:"150g",cal:310,p:34,c:0,f:19,fib:0,cat:"Protein & Fitness"},
+ {n:"Quinoa (cooked)",e:"🌾",s:"1 cup (185g)",cal:220,p:8,c:39,f:4,fib:5,cat:"Protein & Fitness"},
+ {n:"Brown Rice (cooked)",e:"🍚",s:"1 cup (195g)",cal:215,p:5,c:45,f:2,fib:4,cat:"Protein & Fitness"},
+ {n:"Sweet Potato",e:"🍠",s:"1 medium (150g)",cal:130,p:2,c:30,f:0,fib:5,cat:"Protein & Fitness"},
+ {n:"Boiled Potato",e:"🥔",s:"1 medium (150g)",cal:130,p:3,c:30,f:0,fib:3,cat:"Protein & Fitness"},
+ {n:"Corn (boiled)",e:"🌽",s:"1 cob",cal:120,p:4,c:27,f:1,fib:3,cat:"Protein & Fitness"},
+
+ // ---------------- more Vegetables ----------------
+ {n:"Broccoli (steamed)",e:"🥦",s:"1 cup (150g)",cal:55,p:4,c:11,f:1,fib:5,cat:"Vegetables"},
+ {n:"Spinach (cooked)",e:"🥬",s:"1 cup (180g)",cal:60,p:5,c:7,f:1,fib:4,cat:"Vegetables"},
+ {n:"Mushroom Saute",e:"🍄",s:"1 cup (150g)",cal:120,p:5,c:8,f:8,fib:2,cat:"Vegetables"},
+ {n:"Bell Peppers",e:"🫑",s:"1 cup (150g)",cal:40,p:1,c:9,f:0,fib:3,cat:"Vegetables"},
+ {n:"Zucchini (grilled)",e:"🥒",s:"1 cup (180g)",cal:80,p:2,c:7,f:5,fib:2,cat:"Vegetables"},
+ {n:"Roasted Vegetables",e:"🥕",s:"1 bowl (200g)",cal:170,p:4,c:22,f:8,fib:6,cat:"Vegetables"},
+ {n:"Cauliflower (steamed)",e:"🥦",s:"1 cup (150g)",cal:40,p:3,c:8,f:0,fib:3,cat:"Vegetables"},
+ {n:"Carrot (raw)",e:"🥕",s:"1 medium",cal:25,p:1,c:6,f:0,fib:2,cat:"Vegetables"},
+ {n:"Tomato",e:"🍅",s:"1 medium",cal:22,p:1,c:5,f:0,fib:2,cat:"Vegetables"},
+ {n:"Onion",e:"🧅",s:"1 medium",cal:44,p:1,c:10,f:0,fib:2,cat:"Vegetables"},
+
+ // ---------------- more Fruits ----------------
+ {n:"Strawberries",e:"🍓",s:"1 cup (150g)",cal:50,p:1,c:12,f:0,fib:3,cat:"Fruits"},
+ {n:"Blueberries",e:"🫐",s:"1 cup (150g)",cal:85,p:1,c:21,f:0,fib:4,cat:"Fruits"},
+ {n:"Pineapple",e:"🍍",s:"1 cup (165g)",cal:82,p:1,c:22,f:0,fib:2,cat:"Fruits"},
+ {n:"Kiwi",e:"🥝",s:"1 medium",cal:42,p:1,c:10,f:0,fib:2,cat:"Fruits"},
+ {n:"Pear",e:"🍐",s:"1 medium",cal:100,p:1,c:27,f:0,fib:6,cat:"Fruits"},
+ {n:"Peach",e:"🍑",s:"1 medium",cal:59,p:1,c:14,f:0,fib:2,cat:"Fruits"},
+ {n:"Plum",e:"🟣",s:"1 medium",cal:30,p:0,c:8,f:0,fib:1,cat:"Fruits"},
+ {n:"Cherries",e:"🍒",s:"1 cup (150g)",cal:87,p:1,c:22,f:0,fib:3,cat:"Fruits"},
+ {n:"Litchi",e:"🔴",s:"10 pieces",cal:66,p:1,c:17,f:0,fib:1,cat:"Fruits"},
+ {n:"Custard Apple",e:"🟢",s:"1 medium",cal:150,p:3,c:36,f:1,fib:7,cat:"Fruits"},
+ {n:"Chikoo / Sapota",e:"🟤",s:"1 medium",cal:83,p:1,c:20,f:1,fib:5,cat:"Fruits"},
+ {n:"Muskmelon",e:"🍈",s:"1 cup (160g)",cal:54,p:1,c:13,f:0,fib:1,cat:"Fruits"},
+
+ // ---------------- more Sweets ----------------
+ {n:"Brownie",e:"🍫",s:"1 piece",cal:250,p:3,c:32,f:13,fib:2,cat:"Sweets"},
+ {n:"Chocolate Chip Cookie",e:"🍪",s:"1 cookie",cal:150,p:2,c:20,f:7,fib:1,cat:"Sweets"},
+ {n:"Donut (glazed)",e:"🍩",s:"1 piece",cal:250,p:4,c:31,f:12,fib:1,cat:"Sweets"},
+ {n:"Cheesecake",e:"🍰",s:"1 slice",cal:400,p:7,c:36,f:26,fib:1,cat:"Sweets"},
+ {n:"Muffin (chocolate)",e:"🧁",s:"1 piece",cal:380,p:6,c:52,f:17,fib:2,cat:"Sweets"},
+ {n:"Pastry (cream)",e:"🍰",s:"1 slice",cal:330,p:4,c:40,f:17,fib:1,cat:"Sweets"},
+ {n:"Milk Chocolate Bar",e:"🍫",s:"1 bar (45g)",cal:240,p:3,c:26,f:14,fib:1,cat:"Sweets"},
+ {n:"Kaju Katli",e:"⬜",s:"2 pieces",cal:180,p:3,c:20,f:10,fib:1,cat:"Sweets"},
+ {n:"Rasmalai",e:"⚪",s:"2 pieces",cal:280,p:8,c:36,f:12,fib:0,cat:"Sweets"},
+ {n:"Soan Papdi",e:"🟨",s:"2 pieces",cal:200,p:2,c:26,f:10,fib:0,cat:"Sweets"},
+ {n:"Modak",e:"🥟",s:"2 pieces",cal:220,p:3,c:34,f:8,fib:2,cat:"Sweets"},
+
+ // ---------------- more Beverages ----------------
+ {n:"Chocolate Milkshake",e:"🥤",s:"1 glass (300ml)",cal:360,p:9,c:52,f:13,fib:1,cat:"Beverages"},
+ {n:"Banana Shake",e:"🥤",s:"1 glass (300ml)",cal:280,p:8,c:46,f:7,fib:3,cat:"Beverages"},
+ {n:"Mango Shake",e:"🥭",s:"1 glass (300ml)",cal:300,p:7,c:52,f:7,fib:3,cat:"Beverages"},
+ {n:"Cold Coffee",e:"🧋",s:"1 glass (300ml)",cal:230,p:7,c:32,f:8,fib:0,cat:"Beverages"},
+ {n:"Iced Tea",e:"🧊",s:"1 glass (300ml)",cal:90,p:0,c:23,f:0,fib:0,cat:"Beverages"},
+ {n:"Lemonade / Nimbu Pani",e:"🍋",s:"1 glass (250ml)",cal:70,p:0,c:18,f:0,fib:0,cat:"Beverages"},
+ {n:"Almond Milk (unsweetened)",e:"🥛",s:"1 glass (250ml)",cal:40,p:1,c:2,f:3,fib:1,cat:"Beverages"},
+ {n:"Soy Milk",e:"🥛",s:"1 glass (250ml)",cal:105,p:8,c:9,f:4,fib:1,cat:"Beverages"},
+ {n:"Kombucha",e:"🫧",s:"1 bottle (330ml)",cal:60,p:0,c:14,f:0,fib:0,cat:"Beverages"},
+ {n:"Energy Drink",e:"⚡",s:"1 can (250ml)",cal:110,p:0,c:28,f:0,fib:0,cat:"Beverages"},
+ {n:"Red Wine",e:"🍷",s:"1 glass (150ml)",cal:125,p:0,c:4,f:0,fib:0,cat:"Beverages"},
+ {n:"Whiskey",e:"🥃",s:"1 peg (30ml)",cal:70,p:0,c:0,f:0,fib:0,cat:"Beverages"},
+ {n:"Vodka",e:"🍸",s:"1 peg (30ml)",cal:65,p:0,c:0,f:0,fib:0,cat:"Beverages"},
+ {n:"Mojito",e:"🍹",s:"1 glass (300ml)",cal:220,p:0,c:26,f:0,fib:0,cat:"Beverages"},
+
+ // ---------------- more Nuts & Seeds ----------------
+ {n:"Pistachios",e:"🥜",s:"20 pieces",cal:80,p:3,c:4,f:6,fib:1,cat:"Nuts & Seeds"},
+ {n:"Raisins",e:"🍇",s:"2 tbsp (20g)",cal:60,p:1,c:16,f:0,fib:1,cat:"Nuts & Seeds"},
+ {n:"Pumpkin Seeds",e:"🎃",s:"1 tbsp",cal:60,p:3,c:2,f:5,fib:1,cat:"Nuts & Seeds"},
+ {n:"Sunflower Seeds",e:"🌻",s:"1 tbsp",cal:55,p:2,c:2,f:5,fib:1,cat:"Nuts & Seeds"},
+ {n:"Trail Mix",e:"🥜",s:"handful (40g)",cal:200,p:6,c:18,f:13,fib:3,cat:"Nuts & Seeds"},
+ {n:"Mixed Dry Fruits",e:"🌰",s:"handful (30g)",cal:150,p:4,c:12,f:10,fib:2,cat:"Nuts & Seeds"},
+
+ /* ---- rotis, parathas and regional breads ---- */
+ {n:"Jowar Roti / Bhakri",e:"🫓",s:"1 piece",cal:95,p:3,c:19,f:1,fib:3,cat:"Breads"},
+ {n:"Bajra Roti",e:"🫓",s:"1 piece",cal:120,p:3,c:21,f:2,fib:4,cat:"Breads"},
+ {n:"Ragi Roti",e:"🫓",s:"1 piece",cal:105,p:3,c:21,f:1,fib:4,cat:"Breads"},
+ {n:"Makki di Roti",e:"🫓",s:"1 piece",cal:150,p:4,c:26,f:4,fib:3,cat:"Breads"},
+ {n:"Multigrain Roti",e:"🫓",s:"1 piece",cal:120,p:4,c:20,f:3,fib:4,cat:"Breads"},
+ {n:"Phulka (no ghee)",e:"🫓",s:"1 piece",cal:85,p:3,c:17,f:1,fib:2,cat:"Breads"},
+ {n:"Roti with Ghee",e:"🫓",s:"1 piece",cal:145,p:3,c:20,f:6,fib:3,cat:"Breads"},
+ {n:"Wheat Bhakri",e:"🫓",s:"1 piece",cal:130,p:4,c:22,f:3,fib:3,cat:"Breads"},
+ {n:"Rumali Roti",e:"🫓",s:"1 piece",cal:130,p:4,c:25,f:2,fib:1,cat:"Breads"},
+ {n:"Kulcha",e:"🫓",s:"1 piece",cal:210,p:6,c:38,f:4,fib:2,cat:"Breads"},
+ {n:"Amritsari Kulcha",e:"🫓",s:"1 piece",cal:300,p:7,c:44,f:11,fib:3,cat:"Breads"},
+ {n:"Garlic Naan",e:"🫓",s:"1 piece",cal:250,p:7,c:40,f:7,fib:2,cat:"Breads"},
+ {n:"Cheese Naan",e:"🫓",s:"1 piece",cal:320,p:11,c:42,f:12,fib:2,cat:"Breads"},
+ {n:"Lachha Paratha",e:"🫓",s:"1 piece",cal:290,p:6,c:38,f:13,fib:2,cat:"Breads"},
+ {n:"Gobi Paratha",e:"🫓",s:"1 piece",cal:260,p:7,c:34,f:11,fib:4,cat:"Breads"},
+ {n:"Paneer Paratha",e:"🫓",s:"1 piece",cal:300,p:11,c:32,f:14,fib:3,cat:"Breads"},
+ {n:"Methi Paratha",e:"🫓",s:"1 piece",cal:240,p:6,c:32,f:10,fib:4,cat:"Breads"},
+ {n:"Mooli Paratha",e:"🫓",s:"1 piece",cal:250,p:6,c:34,f:10,fib:4,cat:"Breads"},
+ {n:"Onion Paratha",e:"🫓",s:"1 piece",cal:260,p:6,c:34,f:11,fib:3,cat:"Breads"},
+ {n:"Sattu Paratha",e:"🫓",s:"1 piece",cal:280,p:9,c:38,f:10,fib:5,cat:"Breads"},
+ {n:"Thepla",e:"🫓",s:"2 pieces",cal:260,p:6,c:36,f:10,fib:4,cat:"Breads"},
+ {n:"Khakhra",e:"🫓",s:"2 pieces",cal:120,p:4,c:20,f:3,fib:2,cat:"Breads"},
+ {n:"Puran Poli",e:"🫓",s:"1 piece",cal:290,p:6,c:48,f:8,fib:3,cat:"Breads"},
+ {n:"Malabar Parotta",e:"🫓",s:"1 piece",cal:300,p:6,c:42,f:12,fib:2,cat:"Breads"},
+ {n:"Sheermal",e:"🫓",s:"1 piece",cal:230,p:5,c:38,f:6,fib:1,cat:"Breads"},
+ {n:"Litti",e:"🟤",s:"2 pieces",cal:280,p:8,c:40,f:9,fib:5,cat:"Breads"},
+
+ /* ---- south indian ---- */
+ {n:"Rava Dosa",e:"🥞",s:"1 piece",cal:240,p:5,c:34,f:9,fib:2,cat:"South Indian"},
+ {n:"Mysore Masala Dosa",e:"🥞",s:"1 piece",cal:340,p:7,c:46,f:14,fib:3,cat:"South Indian"},
+ {n:"Set Dosa",e:"🥞",s:"2 pieces",cal:220,p:5,c:36,f:6,fib:2,cat:"South Indian"},
+ {n:"Neer Dosa",e:"🥞",s:"3 pieces",cal:180,p:3,c:34,f:3,fib:1,cat:"South Indian"},
+ {n:"Ghee Roast Dosa",e:"🥞",s:"1 piece",cal:320,p:6,c:40,f:15,fib:2,cat:"South Indian"},
+ {n:"Ragi Dosa",e:"🥞",s:"1 piece",cal:190,p:5,c:30,f:5,fib:4,cat:"South Indian"},
+ {n:"Onion Uttapam",e:"🥞",s:"1 piece",cal:250,p:6,c:36,f:9,fib:3,cat:"South Indian"},
+ {n:"Idli Sambar",e:"⚪",s:"2 idli + sambar",cal:250,p:8,c:40,f:6,fib:4,cat:"South Indian"},
+ {n:"Podi Idli",e:"⚪",s:"3 pieces",cal:260,p:7,c:38,f:9,fib:3,cat:"South Indian"},
+ {n:"Appam",e:"🥞",s:"2 pieces",cal:200,p:4,c:38,f:4,fib:1,cat:"South Indian"},
+ {n:"Idiyappam",e:"🍜",s:"2 pieces",cal:180,p:4,c:38,f:2,fib:2,cat:"South Indian"},
+ {n:"Puttu",e:"🥥",s:"1 cylinder",cal:220,p:5,c:42,f:4,fib:3,cat:"South Indian"},
+ {n:"Kadala Curry",e:"🫘",s:"1 bowl (200g)",cal:230,p:11,c:30,f:8,fib:9,cat:"South Indian"},
+ {n:"Bisi Bele Bath",e:"🍛",s:"1 bowl (250g)",cal:350,p:11,c:52,f:11,fib:6,cat:"South Indian"},
+ {n:"Rasam",e:"🍲",s:"1 bowl (200ml)",cal:60,p:2,c:9,f:2,fib:1,cat:"South Indian"},
+ {n:"Avial",e:"🥥",s:"1 bowl (200g)",cal:180,p:4,c:14,f:12,fib:4,cat:"South Indian"},
+ {n:"Thoran",e:"🥬",s:"1 bowl (150g)",cal:120,p:3,c:10,f:7,fib:4,cat:"South Indian"},
+ {n:"Olan",e:"🥥",s:"1 bowl (150g)",cal:150,p:3,c:10,f:11,fib:3,cat:"South Indian"},
+ {n:"Kootu",e:"🍲",s:"1 bowl (200g)",cal:160,p:7,c:18,f:6,fib:5,cat:"South Indian"},
+ {n:"Poriyal",e:"🥕",s:"1 bowl (150g)",cal:110,p:3,c:11,f:6,fib:3,cat:"South Indian"},
+ {n:"Sambar Vada",e:"🍩",s:"2 vada + sambar",cal:320,p:9,c:36,f:15,fib:4,cat:"South Indian"},
+ {n:"Thayir Vada (Curd Vada)",e:"🍩",s:"2 pieces",cal:280,p:8,c:30,f:14,fib:3,cat:"South Indian"},
+ {n:"Paniyaram",e:"🟠",s:"4 pieces",cal:200,p:5,c:30,f:6,fib:2,cat:"South Indian"},
+ {n:"Kesari Bath",e:"🟠",s:"1 bowl (150g)",cal:300,p:4,c:46,f:11,fib:1,cat:"South Indian"},
+ {n:"Lemon Sevai",e:"🍜",s:"1 plate (200g)",cal:250,p:5,c:42,f:7,fib:2,cat:"South Indian"},
+
+ /* ---- rice, khichdi and millets ---- */
+ {n:"Mutton Biryani",e:"🍛",s:"1 plate (300g)",cal:550,p:26,c:62,f:22,fib:3,cat:"Rice & Grains"},
+ {n:"Egg Biryani",e:"🍛",s:"1 plate (300g)",cal:420,p:16,c:58,f:14,fib:3,cat:"Rice & Grains"},
+ {n:"Prawn Biryani",e:"🍛",s:"1 plate (300g)",cal:450,p:22,c:60,f:14,fib:3,cat:"Rice & Grains"},
+ {n:"Hyderabadi Veg Biryani",e:"🍛",s:"1 plate (250g)",cal:400,p:9,c:60,f:13,fib:5,cat:"Rice & Grains"},
+ {n:"Ghee Rice",e:"🍚",s:"1 cup (150g)",cal:300,p:5,c:46,f:11,fib:1,cat:"Rice & Grains"},
+ {n:"Tomato Rice",e:"🍚",s:"1 plate (200g)",cal:280,p:5,c:44,f:9,fib:3,cat:"Rice & Grains"},
+ {n:"Tamarind Rice (Puliyodarai)",e:"🍚",s:"1 plate (200g)",cal:300,p:5,c:46,f:10,fib:3,cat:"Rice & Grains"},
+ {n:"Coconut Rice",e:"🥥",s:"1 plate (200g)",cal:310,p:5,c:44,f:13,fib:2,cat:"Rice & Grains"},
+ {n:"Rajma Chawal",e:"🍛",s:"1 plate",cal:480,p:16,c:76,f:11,fib:12,cat:"Rice & Grains"},
+ {n:"Chole Chawal",e:"🍛",s:"1 plate",cal:500,p:16,c:78,f:13,fib:12,cat:"Rice & Grains"},
+ {n:"Dal Chawal",e:"🍛",s:"1 plate",cal:400,p:14,c:66,f:8,fib:8,cat:"Rice & Grains"},
+ {n:"Keema Pulao",e:"🍛",s:"1 plate (250g)",cal:450,p:22,c:52,f:17,fib:3,cat:"Rice & Grains"},
+ {n:"Bajra Khichdi",e:"🍲",s:"1 bowl (250g)",cal:300,p:9,c:46,f:9,fib:7,cat:"Rice & Grains"},
+ {n:"Sabudana Khichdi",e:"⚪",s:"1 bowl (200g)",cal:320,p:4,c:52,f:11,fib:2,cat:"Rice & Grains"},
+ {n:"Dalia (broken wheat)",e:"🥣",s:"1 bowl (200g)",cal:220,p:7,c:40,f:4,fib:6,cat:"Rice & Grains"},
+ {n:"Ragi Mudde",e:"⚫",s:"2 pieces",cal:250,p:6,c:54,f:1,fib:7,cat:"Rice & Grains"},
+ {n:"Millet Upma",e:"🥣",s:"1 bowl (200g)",cal:230,p:6,c:36,f:7,fib:5,cat:"Rice & Grains"},
+ {n:"Red Rice (cooked)",e:"🍚",s:"1 cup (150g)",cal:215,p:5,c:45,f:2,fib:3,cat:"Rice & Grains"},
+
+ /* ---- dals ---- */
+ {n:"Dal Fry",e:"🍲",s:"1 bowl (200g)",cal:200,p:10,c:26,f:7,fib:6,cat:"Dal & Legumes"},
+ {n:"Toor Dal (plain)",e:"🍲",s:"1 bowl (200g)",cal:150,p:9,c:22,f:3,fib:6,cat:"Dal & Legumes"},
+ {n:"Masoor Dal",e:"🍲",s:"1 bowl (200g)",cal:160,p:10,c:24,f:3,fib:7,cat:"Dal & Legumes"},
+ {n:"Kali Dal (Urad)",e:"🍲",s:"1 bowl (200g)",cal:210,p:11,c:26,f:7,fib:8,cat:"Dal & Legumes"},
+ {n:"Chana Dal",e:"🍲",s:"1 bowl (200g)",cal:190,p:11,c:28,f:5,fib:9,cat:"Dal & Legumes"},
+ {n:"Panchmel Dal",e:"🍲",s:"1 bowl (200g)",cal:200,p:11,c:26,f:6,fib:7,cat:"Dal & Legumes"},
+ {n:"Dal Dhokli",e:"🍲",s:"1 bowl (250g)",cal:350,p:12,c:50,f:11,fib:7,cat:"Dal & Legumes"},
+ {n:"Amti",e:"🍲",s:"1 bowl (200g)",cal:170,p:8,c:22,f:6,fib:5,cat:"Dal & Legumes"},
+ {n:"Lobia (black eyed peas)",e:"🫘",s:"1 bowl (200g)",cal:230,p:12,c:32,f:6,fib:10,cat:"Dal & Legumes"},
+ {n:"Moong Sprouts",e:"🌱",s:"1 bowl (150g)",cal:130,p:9,c:20,f:1,fib:6,cat:"Dal & Legumes"},
+ {n:"Dal Baati Churma",e:"🍛",s:"1 plate",cal:650,p:14,c:78,f:30,fib:8,cat:"Dal & Legumes"},
+
+ /* ---- sabzis and paneer ---- */
+ {n:"Shahi Paneer",e:"🧀",s:"1 bowl (200g)",cal:370,p:14,c:18,f:27,fib:2,cat:"Vegetables"},
+ {n:"Kadai Paneer",e:"🧀",s:"1 bowl (200g)",cal:320,p:15,c:16,f:22,fib:4,cat:"Vegetables"},
+ {n:"Paneer Tikka Masala",e:"🧀",s:"1 bowl (200g)",cal:350,p:17,c:16,f:24,fib:3,cat:"Vegetables"},
+ {n:"Paneer Do Pyaza",e:"🧀",s:"1 bowl (200g)",cal:330,p:16,c:18,f:22,fib:3,cat:"Vegetables"},
+ {n:"Dum Aloo",e:"🥔",s:"1 bowl (200g)",cal:250,p:5,c:30,f:13,fib:4,cat:"Vegetables"},
+ {n:"Gatte ki Sabzi",e:"🍲",s:"1 bowl (200g)",cal:300,p:10,c:28,f:16,fib:4,cat:"Vegetables"},
+ {n:"Sarson da Saag",e:"🥬",s:"1 bowl (200g)",cal:200,p:7,c:14,f:13,fib:6,cat:"Vegetables"},
+ {n:"Undhiyu",e:"🥘",s:"1 bowl (200g)",cal:320,p:8,c:30,f:19,fib:9,cat:"Vegetables"},
+ {n:"Veg Kolhapuri",e:"🌶️",s:"1 bowl (200g)",cal:260,p:6,c:22,f:17,fib:5,cat:"Vegetables"},
+ {n:"Navratan Korma",e:"🥘",s:"1 bowl (200g)",cal:340,p:8,c:26,f:23,fib:4,cat:"Vegetables"},
+ {n:"Methi Malai Matar",e:"🌿",s:"1 bowl (200g)",cal:300,p:8,c:20,f:21,fib:5,cat:"Vegetables"},
+ {n:"Veg Handi",e:"🥘",s:"1 bowl (200g)",cal:280,p:7,c:22,f:18,fib:5,cat:"Vegetables"},
+ {n:"Lauki Kofta",e:"🧆",s:"2 kofta + gravy",cal:320,p:8,c:24,f:22,fib:4,cat:"Vegetables"},
+ {n:"Lauki Sabzi",e:"🥒",s:"1 bowl (150g)",cal:110,p:2,c:12,f:6,fib:3,cat:"Vegetables"},
+ {n:"Turai / Tinda Sabzi",e:"🥒",s:"1 bowl (150g)",cal:120,p:2,c:12,f:7,fib:3,cat:"Vegetables"},
+ {n:"Cabbage Sabzi",e:"🥬",s:"1 bowl (150g)",cal:120,p:3,c:12,f:7,fib:4,cat:"Vegetables"},
+ {n:"Aloo Shimla Mirch",e:"🫑",s:"1 bowl (150g)",cal:180,p:4,c:24,f:8,fib:4,cat:"Vegetables"},
+ {n:"Bharwa Shimla Mirch",e:"🫑",s:"2 pieces",cal:240,p:6,c:24,f:13,fib:4,cat:"Vegetables"},
+ {n:"Karela Fry",e:"🥒",s:"1 bowl (150g)",cal:160,p:3,c:14,f:10,fib:4,cat:"Vegetables"},
+ {n:"Aloo Methi",e:"🌿",s:"1 bowl (150g)",cal:190,p:4,c:22,f:10,fib:4,cat:"Vegetables"},
+ {n:"Aloo Baingan",e:"🍆",s:"1 bowl (200g)",cal:190,p:4,c:22,f:10,fib:5,cat:"Vegetables"},
+ {n:"Sev Tameta",e:"🍅",s:"1 bowl (150g)",cal:230,p:6,c:22,f:13,fib:3,cat:"Vegetables"},
+ {n:"Dahi Aloo",e:"🥔",s:"1 bowl (200g)",cal:200,p:4,c:26,f:9,fib:3,cat:"Vegetables"},
+ {n:"Mushroom Masala",e:"🍄",s:"1 bowl (200g)",cal:200,p:6,c:14,f:14,fib:3,cat:"Vegetables"},
+ {n:"Soya Chunk Curry",e:"🟤",s:"1 bowl (200g)",cal:250,p:22,c:18,f:10,fib:7,cat:"Vegetables"},
+
+ /* ---- meat, fish and eggs on the bone ---- */
+ {n:"Chicken Chettinad",e:"🍗",s:"1 bowl (200g)",cal:330,p:28,c:10,f:20,fib:2,cat:"Non-Veg"},
+ {n:"Chicken Korma",e:"🍗",s:"1 bowl (200g)",cal:360,p:25,c:14,f:24,fib:2,cat:"Non-Veg"},
+ {n:"Kadai Chicken",e:"🍗",s:"1 bowl (200g)",cal:320,p:27,c:12,f:19,fib:3,cat:"Non-Veg"},
+ {n:"Chicken Do Pyaza",e:"🍗",s:"1 bowl (200g)",cal:310,p:27,c:12,f:18,fib:2,cat:"Non-Veg"},
+ {n:"Chicken Handi",e:"🍗",s:"1 bowl (200g)",cal:350,p:27,c:12,f:22,fib:2,cat:"Non-Veg"},
+ {n:"Dhaba Chicken Curry",e:"🍗",s:"1 bowl (200g)",cal:330,p:26,c:10,f:21,fib:2,cat:"Non-Veg"},
+ {n:"Murgh Musallam",e:"🍗",s:"1 bowl (200g)",cal:420,p:30,c:14,f:28,fib:2,cat:"Non-Veg"},
+ {n:"Chicken Ghee Roast",e:"🍗",s:"1 bowl (200g)",cal:380,p:28,c:12,f:25,fib:2,cat:"Non-Veg"},
+ {n:"Chicken Sukka",e:"🍗",s:"1 bowl (180g)",cal:300,p:28,c:8,f:18,fib:2,cat:"Non-Veg"},
+ {n:"Chicken 65",e:"🍗",s:"1 plate (150g)",cal:300,p:26,c:16,f:16,fib:1,cat:"Non-Veg"},
+ {n:"Chicken Lollipop",e:"🍗",s:"4 pieces",cal:340,p:24,c:18,f:20,fib:1,cat:"Non-Veg"},
+ {n:"Mutton Rogan Josh",e:"🍖",s:"1 bowl (200g)",cal:400,p:27,c:8,f:29,fib:1,cat:"Non-Veg"},
+ {n:"Mutton Korma",e:"🍖",s:"1 bowl (200g)",cal:420,p:26,c:12,f:30,fib:2,cat:"Non-Veg"},
+ {n:"Mutton Keema",e:"🍖",s:"1 bowl (180g)",cal:350,p:26,c:8,f:24,fib:2,cat:"Non-Veg"},
+ {n:"Kosha Mangsho",e:"🍖",s:"1 bowl (200g)",cal:420,p:28,c:10,f:30,fib:2,cat:"Non-Veg"},
+ {n:"Laal Maas",e:"🌶️",s:"1 bowl (200g)",cal:400,p:27,c:6,f:29,fib:1,cat:"Non-Veg"},
+ {n:"Bhuna Gosht",e:"🍖",s:"1 bowl (200g)",cal:380,p:28,c:8,f:27,fib:1,cat:"Non-Veg"},
+ {n:"Nihari",e:"🍖",s:"1 bowl (250g)",cal:450,p:30,c:12,f:32,fib:1,cat:"Non-Veg"},
+ {n:"Haleem",e:"🥣",s:"1 bowl (250g)",cal:380,p:22,c:34,f:18,fib:4,cat:"Non-Veg"},
+ {n:"Keema Pav",e:"🍔",s:"1 plate",cal:420,p:20,c:44,f:18,fib:3,cat:"Non-Veg"},
+ {n:"Kerala Beef Fry",e:"🥩",s:"1 bowl (180g)",cal:350,p:30,c:8,f:22,fib:2,cat:"Non-Veg"},
+ {n:"Pork Vindaloo",e:"🥩",s:"1 bowl (200g)",cal:420,p:26,c:10,f:31,fib:1,cat:"Non-Veg"},
+ {n:"Sorpotel",e:"🥩",s:"1 bowl (180g)",cal:400,p:25,c:8,f:30,fib:1,cat:"Non-Veg"},
+ {n:"Duck Roast",e:"🦆",s:"1 bowl (200g)",cal:420,p:28,c:10,f:30,fib:1,cat:"Non-Veg"},
+ {n:"Fish Fry",e:"🐟",s:"1 piece (120g)",cal:260,p:26,c:8,f:14,fib:1,cat:"Non-Veg"},
+ {n:"Amritsari Fish",e:"🐟",s:"1 plate (150g)",cal:300,p:25,c:14,f:16,fib:1,cat:"Non-Veg"},
+ {n:"Fish Molee",e:"🐟",s:"1 bowl (200g)",cal:280,p:24,c:10,f:17,fib:1,cat:"Non-Veg"},
+ {n:"Macher Jhol",e:"🐟",s:"1 bowl (200g)",cal:240,p:24,c:8,f:12,fib:2,cat:"Non-Veg"},
+ {n:"Shorshe Ilish",e:"🐟",s:"1 piece + gravy",cal:350,p:22,c:6,f:27,fib:1,cat:"Non-Veg"},
+ {n:"Pomfret Fry",e:"🐟",s:"1 medium",cal:280,p:28,c:6,f:16,fib:0,cat:"Non-Veg"},
+ {n:"Surmai Fry",e:"🐟",s:"2 slices",cal:270,p:30,c:6,f:14,fib:0,cat:"Non-Veg"},
+ {n:"Prawn Fry",e:"🦐",s:"1 plate (150g)",cal:220,p:24,c:6,f:11,fib:1,cat:"Non-Veg"},
+ {n:"Chingri Malai Curry",e:"🦐",s:"1 bowl (200g)",cal:330,p:22,c:10,f:23,fib:1,cat:"Non-Veg"},
+ {n:"Crab Curry",e:"🦀",s:"1 bowl (200g)",cal:240,p:22,c:8,f:13,fib:1,cat:"Non-Veg"},
+
+ /* ---- tandoor and kebabs ---- */
+ {n:"Seekh Kebab",e:"🍢",s:"2 pieces",cal:280,p:24,c:6,f:18,fib:1,cat:"Kebabs & Tandoor"},
+ {n:"Galouti Kebab",e:"🍢",s:"3 pieces",cal:260,p:20,c:8,f:16,fib:1,cat:"Kebabs & Tandoor"},
+ {n:"Shami Kebab",e:"🍢",s:"2 pieces",cal:240,p:18,c:12,f:14,fib:2,cat:"Kebabs & Tandoor"},
+ {n:"Reshmi Kebab",e:"🍢",s:"4 pieces",cal:280,p:26,c:6,f:17,fib:0,cat:"Kebabs & Tandoor"},
+ {n:"Malai Chicken Tikka",e:"🍢",s:"4 pieces",cal:300,p:26,c:6,f:19,fib:0,cat:"Kebabs & Tandoor"},
+ {n:"Hariyali Chicken Tikka",e:"🌿",s:"4 pieces",cal:250,p:28,c:6,f:13,fib:1,cat:"Kebabs & Tandoor"},
+ {n:"Tangdi Kebab",e:"🍗",s:"2 pieces",cal:320,p:30,c:6,f:20,fib:0,cat:"Kebabs & Tandoor"},
+ {n:"Fish Tikka",e:"🐟",s:"4 pieces",cal:220,p:26,c:4,f:11,fib:0,cat:"Kebabs & Tandoor"},
+ {n:"Tandoori Prawns",e:"🦐",s:"6 pieces",cal:200,p:24,c:4,f:10,fib:0,cat:"Kebabs & Tandoor"},
+ {n:"Paneer Tikka",e:"🧀",s:"4 pieces",cal:300,p:16,c:10,f:22,fib:2,cat:"Kebabs & Tandoor"},
+ {n:"Tandoori Mushroom",e:"🍄",s:"6 pieces",cal:150,p:6,c:10,f:9,fib:3,cat:"Kebabs & Tandoor"},
+ {n:"Soya Chaap (tandoori)",e:"🍢",s:"1 plate",cal:320,p:22,c:20,f:18,fib:4,cat:"Kebabs & Tandoor"},
+ {n:"Tandoori Aloo",e:"🥔",s:"4 pieces",cal:200,p:4,c:26,f:9,fib:4,cat:"Kebabs & Tandoor"},
+
+ /* ---- chaat and street food ---- */
+ {n:"Aloo Chaat",e:"🥔",s:"1 plate",cal:220,p:4,c:30,f:10,fib:4,cat:"Chaat & Street"},
+ {n:"Papdi Chaat",e:"🥗",s:"1 plate",cal:280,p:6,c:36,f:12,fib:4,cat:"Chaat & Street"},
+ {n:"Raj Kachori",e:"🥟",s:"1 piece",cal:350,p:8,c:44,f:16,fib:5,cat:"Chaat & Street"},
+ {n:"Dahi Puri",e:"🥟",s:"6 pieces",cal:240,p:6,c:34,f:9,fib:3,cat:"Chaat & Street"},
+ {n:"Dahi Bhalla",e:"⚪",s:"2 pieces",cal:300,p:9,c:38,f:12,fib:3,cat:"Chaat & Street"},
+ {n:"Chana Chaat",e:"🫘",s:"1 plate",cal:220,p:11,c:30,f:6,fib:9,cat:"Chaat & Street"},
+ {n:"Aloo Tikki Chaat",e:"🥔",s:"1 plate",cal:300,p:6,c:38,f:14,fib:4,cat:"Chaat & Street"},
+ {n:"Samosa Chaat",e:"🥟",s:"1 plate",cal:380,p:8,c:44,f:19,fib:4,cat:"Chaat & Street"},
+ {n:"Kachori Sabzi",e:"🥟",s:"1 plate",cal:380,p:8,c:46,f:18,fib:4,cat:"Chaat & Street"},
+ {n:"Ragda Pattice",e:"🥔",s:"1 plate",cal:350,p:10,c:48,f:13,fib:8,cat:"Chaat & Street"},
+ {n:"Misal Pav",e:"🌶️",s:"1 plate",cal:450,p:14,c:56,f:18,fib:10,cat:"Chaat & Street"},
+ {n:"Chole Bhature",e:"🫓",s:"1 plate",cal:650,p:16,c:82,f:28,fib:12,cat:"Chaat & Street"},
+ {n:"Dabeli",e:"🍔",s:"1 piece",cal:290,p:6,c:40,f:12,fib:3,cat:"Chaat & Street"},
+ {n:"Veg Frankie / Roll",e:"🌯",s:"1 roll",cal:320,p:8,c:42,f:13,fib:4,cat:"Chaat & Street"},
+ {n:"Paneer Roll",e:"🌯",s:"1 roll",cal:380,p:15,c:40,f:18,fib:3,cat:"Chaat & Street"},
+ {n:"Chicken Kathi Roll",e:"🌯",s:"1 roll",cal:400,p:22,c:40,f:17,fib:3,cat:"Chaat & Street"},
+ {n:"Jhal Muri",e:"🍚",s:"1 plate",cal:180,p:5,c:30,f:5,fib:3,cat:"Chaat & Street"},
+ {n:"Masala Corn",e:"🌽",s:"1 cup",cal:180,p:5,c:28,f:6,fib:4,cat:"Chaat & Street"},
+ {n:"Bhutta (roasted corn)",e:"🌽",s:"1 cob",cal:130,p:4,c:27,f:2,fib:4,cat:"Chaat & Street"},
+ {n:"Chinese Bhel",e:"🍜",s:"1 plate",cal:300,p:6,c:40,f:13,fib:3,cat:"Chaat & Street"},
+
+ /* ---- farsan and namkeen ---- */
+ {n:"Batata Vada",e:"🥔",s:"2 pieces",cal:260,p:5,c:32,f:13,fib:3,cat:"Snacks"},
+ {n:"Sabudana Vada",e:"⚪",s:"3 pieces",cal:300,p:4,c:38,f:15,fib:2,cat:"Snacks"},
+ {n:"Kothimbir Vadi",e:"🌿",s:"4 pieces",cal:220,p:7,c:24,f:11,fib:3,cat:"Snacks"},
+ {n:"Handvo",e:"🟡",s:"1 slice",cal:240,p:8,c:32,f:9,fib:4,cat:"Snacks"},
+ {n:"Khandvi",e:"🟡",s:"6 rolls",cal:160,p:6,c:16,f:8,fib:1,cat:"Snacks"},
+ {n:"Fafda",e:"🟨",s:"1 plate (50g)",cal:250,p:6,c:24,f:14,fib:2,cat:"Snacks"},
+ {n:"Muthiya",e:"🟢",s:"4 pieces",cal:200,p:6,c:30,f:6,fib:4,cat:"Snacks"},
+ {n:"Chakli",e:"🌀",s:"4 pieces",cal:220,p:4,c:24,f:12,fib:2,cat:"Snacks"},
+ {n:"Murukku",e:"🌀",s:"3 pieces",cal:230,p:4,c:26,f:12,fib:2,cat:"Snacks"},
+ {n:"Mathri",e:"🟤",s:"3 pieces",cal:240,p:4,c:26,f:13,fib:1,cat:"Snacks"},
+ {n:"Bhakarwadi",e:"🌀",s:"4 pieces",cal:250,p:5,c:26,f:14,fib:2,cat:"Snacks"},
+ {n:"Namkeen Mixture",e:"🥜",s:"handful (40g)",cal:280,p:6,c:28,f:16,fib:2,cat:"Snacks"},
+ {n:"Banana Chips",e:"🍌",s:"handful (40g)",cal:260,p:1,c:28,f:16,fib:2,cat:"Snacks"},
+ {n:"Roasted Chana",e:"🫘",s:"handful (40g)",cal:160,p:9,c:26,f:3,fib:8,cat:"Snacks"},
+ {n:"Peanut Chaat",e:"🥜",s:"1 bowl",cal:250,p:11,c:16,f:16,fib:4,cat:"Snacks"},
+
+ /* ---- mithai ---- */
+ {n:"Mysore Pak",e:"🟨",s:"2 pieces",cal:320,p:4,c:32,f:20,fib:1,cat:"Sweets"},
+ {n:"Motichoor Laddoo",e:"🟠",s:"1 piece",cal:200,p:3,c:26,f:9,fib:1,cat:"Sweets"},
+ {n:"Coconut Laddoo",e:"🥥",s:"2 pieces",cal:240,p:3,c:26,f:14,fib:3,cat:"Sweets"},
+ {n:"Til Laddoo",e:"🟤",s:"2 pieces",cal:190,p:4,c:20,f:11,fib:3,cat:"Sweets"},
+ {n:"Balushahi",e:"🟤",s:"1 piece",cal:220,p:3,c:28,f:11,fib:1,cat:"Sweets"},
+ {n:"Imarti",e:"🟠",s:"2 pieces",cal:260,p:2,c:44,f:9,fib:0,cat:"Sweets"},
+ {n:"Ghevar",e:"🟡",s:"1 piece",cal:300,p:4,c:38,f:15,fib:1,cat:"Sweets"},
+ {n:"Malpua",e:"🟠",s:"2 pieces",cal:320,p:5,c:44,f:14,fib:1,cat:"Sweets"},
+ {n:"Rabri",e:"🍮",s:"1 bowl (100g)",cal:280,p:8,c:30,f:14,fib:0,cat:"Sweets"},
+ {n:"Basundi",e:"🍮",s:"1 bowl (100g)",cal:250,p:8,c:26,f:13,fib:0,cat:"Sweets"},
+ {n:"Shrikhand",e:"🍮",s:"1 bowl (100g)",cal:260,p:8,c:34,f:10,fib:0,cat:"Sweets"},
+ {n:"Payasam",e:"🍮",s:"1 bowl (150g)",cal:240,p:6,c:38,f:8,fib:1,cat:"Sweets"},
+ {n:"Kulfi",e:"🍦",s:"1 piece",cal:200,p:5,c:22,f:10,fib:1,cat:"Sweets"},
+ {n:"Falooda",e:"🍨",s:"1 glass",cal:350,p:8,c:52,f:12,fib:2,cat:"Sweets"},
+ {n:"Sandesh",e:"⬜",s:"2 pieces",cal:180,p:7,c:22,f:7,fib:0,cat:"Sweets"},
+ {n:"Mishti Doi",e:"🍮",s:"1 bowl (150g)",cal:220,p:6,c:38,f:5,fib:0,cat:"Sweets"},
+ {n:"Chhena Poda",e:"🟤",s:"1 slice",cal:260,p:9,c:30,f:11,fib:0,cat:"Sweets"},
+ {n:"Peda",e:"🟡",s:"2 pieces",cal:200,p:4,c:24,f:9,fib:0,cat:"Sweets"},
+ {n:"Sooji Halwa",e:"🟠",s:"1 bowl (120g)",cal:300,p:4,c:44,f:12,fib:1,cat:"Sweets"},
+ {n:"Moong Dal Halwa",e:"🟡",s:"1 bowl (120g)",cal:380,p:7,c:40,f:21,fib:2,cat:"Sweets"},
+ {n:"Badam Halwa",e:"🌰",s:"1 bowl (120g)",cal:400,p:8,c:38,f:24,fib:2,cat:"Sweets"},
+ {n:"Chikki",e:"🥜",s:"2 pieces",cal:210,p:5,c:24,f:11,fib:2,cat:"Sweets"},
+ {n:"Gajak",e:"🟤",s:"2 pieces",cal:190,p:4,c:20,f:11,fib:2,cat:"Sweets"},
+ {n:"Petha",e:"⬜",s:"2 pieces",cal:140,p:0,c:35,f:0,fib:0,cat:"Sweets"},
+
+ /* ---- chai, sherbet and shakes ---- */
+ {n:"Filter Coffee",e:"☕",s:"1 tumbler",cal:90,p:3,c:11,f:4,fib:0,cat:"Beverages"},
+ {n:"Cutting Chai",e:"☕",s:"1 glass (100ml)",cal:60,p:2,c:8,f:2,fib:0,cat:"Beverages"},
+ {n:"Sulaimani Chai",e:"🍵",s:"1 cup",cal:25,p:0,c:6,f:0,fib:0,cat:"Beverages"},
+ {n:"Badam Milk",e:"🥛",s:"1 glass (250ml)",cal:220,p:8,c:26,f:9,fib:1,cat:"Beverages"},
+ {n:"Rose Milk",e:"🥛",s:"1 glass (250ml)",cal:190,p:7,c:28,f:6,fib:0,cat:"Beverages"},
+ {n:"Bournvita / Horlicks Milk",e:"🥛",s:"1 glass (250ml)",cal:200,p:8,c:28,f:6,fib:0,cat:"Beverages"},
+ {n:"Thandai",e:"🥛",s:"1 glass (250ml)",cal:280,p:8,c:34,f:13,fib:2,cat:"Beverages"},
+ {n:"Mango Lassi",e:"🥭",s:"1 glass (250ml)",cal:280,p:7,c:48,f:7,fib:1,cat:"Beverages"},
+ {n:"Salted Lassi",e:"🥛",s:"1 glass (250ml)",cal:100,p:5,c:8,f:5,fib:0,cat:"Beverages"},
+ {n:"Sattu Drink",e:"🥤",s:"1 glass (250ml)",cal:180,p:9,c:28,f:3,fib:5,cat:"Beverages"},
+ {n:"Jaljeera",e:"🥤",s:"1 glass (250ml)",cal:30,p:0,c:7,f:0,fib:0,cat:"Beverages"},
+ {n:"Aam Panna",e:"🥭",s:"1 glass (250ml)",cal:110,p:0,c:28,f:0,fib:1,cat:"Beverages"},
+ {n:"Sugarcane Juice",e:"🧃",s:"1 glass (250ml)",cal:180,p:0,c:45,f:0,fib:0,cat:"Beverages"},
+ {n:"Kokum Sherbet",e:"🍹",s:"1 glass (250ml)",cal:90,p:0,c:23,f:0,fib:0,cat:"Beverages"},
+ {n:"Jeera Soda",e:"🥤",s:"1 glass (300ml)",cal:80,p:0,c:20,f:0,fib:0,cat:"Beverages"},
+
+ /* ---- raita, chutney and the rest of the thali ---- */
+ {n:"Boondi Raita",e:"🥛",s:"1 bowl (150g)",cal:140,p:5,c:14,f:7,fib:1,cat:"Salads & Sides"},
+ {n:"Cucumber Raita",e:"🥒",s:"1 bowl (150g)",cal:90,p:5,c:8,f:4,fib:1,cat:"Salads & Sides"},
+ {n:"Onion Raita",e:"🧅",s:"1 bowl (150g)",cal:100,p:5,c:9,f:5,fib:1,cat:"Salads & Sides"},
+ {n:"Kachumber Salad",e:"🥗",s:"1 bowl (150g)",cal:60,p:2,c:8,f:2,fib:2,cat:"Salads & Sides"},
+ {n:"Onion Salad (Lachha)",e:"🧅",s:"1 plate",cal:45,p:1,c:10,f:0,fib:2,cat:"Salads & Sides"},
+ {n:"Masala Papad",e:"🟡",s:"1 piece",cal:120,p:4,c:14,f:5,fib:2,cat:"Salads & Sides"},
+ {n:"Papad (fried)",e:"🟡",s:"1 piece",cal:80,p:3,c:9,f:4,fib:1,cat:"Salads & Sides"},
+ {n:"Mango Pickle",e:"🥭",s:"1 tbsp",cal:60,p:0,c:3,f:5,fib:0,cat:"Salads & Sides"},
+ {n:"Mint Chutney",e:"🌿",s:"2 tbsp",cal:30,p:1,c:4,f:1,fib:1,cat:"Salads & Sides"},
+ {n:"Coconut Chutney",e:"🥥",s:"2 tbsp",cal:70,p:1,c:3,f:6,fib:1,cat:"Salads & Sides"},
+ {n:"Tamarind Chutney",e:"🟤",s:"2 tbsp",cal:60,p:0,c:15,f:0,fib:1,cat:"Salads & Sides"},
+ {n:"Garlic Chutney",e:"🧄",s:"1 tbsp",cal:45,p:1,c:4,f:3,fib:1,cat:"Salads & Sides"},
+ {n:"Sev",e:"🟨",s:"2 tbsp",cal:90,p:2,c:8,f:6,fib:1,cat:"Salads & Sides"},
+ {n:"Fried Onion (Birista)",e:"🧅",s:"2 tbsp",cal:80,p:1,c:8,f:5,fib:1,cat:"Salads & Sides"},
+
+ /* ---- dairy staples ---- */
+ {n:"Khoya / Mawa",e:"⬜",s:"50g",cal:200,p:7,c:12,f:14,fib:0,cat:"Dairy & Basics"},
+ {n:"Fresh Cream",e:"🥛",s:"2 tbsp",cal:90,p:1,c:2,f:9,fib:0,cat:"Dairy & Basics"},
+ {n:"Malai",e:"🥛",s:"1 tbsp",cal:55,p:0,c:1,f:6,fib:0,cat:"Dairy & Basics"},
+ {n:"Paneer (low fat, 100g)",e:"🧀",s:"100g",cal:180,p:20,c:4,f:9,fib:0,cat:"Dairy & Basics"},
+ {n:"Curd (low fat)",e:"🥛",s:"1 bowl (150g)",cal:70,p:6,c:8,f:1,fib:0,cat:"Dairy & Basics"},
+ {n:"Milk (skimmed)",e:"🥛",s:"1 glass (250ml)",cal:85,p:8,c:12,f:0,fib:0,cat:"Dairy & Basics"},
+ {n:"Cheese Spread",e:"🧀",s:"1 tbsp",cal:60,p:2,c:1,f:6,fib:0,cat:"Dairy & Basics"},
+ {n:"Condensed Milk",e:"🥫",s:"1 tbsp",cal:60,p:1,c:10,f:2,fib:0,cat:"Dairy & Basics"},
+
+ /* ---- oats and porridge ---- */
+ {n:"Masala Oats",e:"🥣",s:"1 bowl (200g)",cal:220,p:7,c:34,f:6,fib:5,cat:"Oats & Porridge"},
+ {n:"Oats Upma",e:"🥣",s:"1 bowl (200g)",cal:240,p:7,c:36,f:8,fib:5,cat:"Oats & Porridge"},
+ {n:"Oats Khichdi",e:"🥣",s:"1 bowl (250g)",cal:250,p:9,c:38,f:7,fib:6,cat:"Oats & Porridge"},
+ {n:"Oats + Water (plain)",e:"🥣",s:"1 bowl (200g)",cal:150,p:5,c:27,f:3,fib:4,cat:"Oats & Porridge"},
+ {n:"Oats + Milk",e:"🥣",s:"1 bowl (250g)",cal:220,p:10,c:32,f:6,fib:4,cat:"Oats & Porridge"},
+ {n:"Oats + Banana + Peanut Butter",e:"🍌",s:"1 bowl",cal:380,p:13,c:48,f:16,fib:7,cat:"Oats & Porridge"},
+ {n:"Steel-cut Oats",e:"🥣",s:"1 bowl (200g)",cal:170,p:6,c:30,f:3,fib:5,cat:"Oats & Porridge"},
+ {n:"Oats Idli",e:"⚪",s:"2 pieces",cal:160,p:6,c:26,f:3,fib:4,cat:"Oats & Porridge"},
+ {n:"Oats Dosa",e:"🥞",s:"1 piece",cal:200,p:6,c:30,f:6,fib:4,cat:"Oats & Porridge"},
+ {n:"Oats Chilla",e:"🥞",s:"1 piece",cal:210,p:9,c:26,f:7,fib:4,cat:"Oats & Porridge"},
+ {n:"Oats Pancake",e:"🥞",s:"2 pieces",cal:280,p:10,c:38,f:9,fib:4,cat:"Oats & Porridge"},
+ {n:"Oats Smoothie",e:"🥤",s:"1 glass (300ml)",cal:300,p:10,c:48,f:8,fib:6,cat:"Oats & Porridge"},
+ {n:"Ragi Porridge",e:"🥣",s:"1 bowl (250g)",cal:200,p:5,c:38,f:3,fib:6,cat:"Oats & Porridge"},
+ {n:"Dalia Porridge (sweet)",e:"🥣",s:"1 bowl (250g)",cal:250,p:7,c:44,f:5,fib:5,cat:"Oats & Porridge"},
+ {n:"Muesli + Curd",e:"🥣",s:"1 bowl",cal:280,p:12,c:42,f:7,fib:5,cat:"Oats & Porridge"},
+ {n:"Cornmeal Porridge",e:"🥣",s:"1 bowl (250g)",cal:210,p:5,c:40,f:4,fib:3,cat:"Oats & Porridge"},
+
+ /* ---- yogurt and curd bowls ---- */
+ {n:"Greek Yogurt + Honey",e:"🍯",s:"1 bowl (150g)",cal:220,p:15,c:28,f:4,fib:0,cat:"Yogurt & Bowls"},
+ {n:"Greek Yogurt + Berries",e:"🫐",s:"1 bowl (150g)",cal:190,p:15,c:22,f:3,fib:3,cat:"Yogurt & Bowls"},
+ {n:"High-protein Yogurt (Skyr)",e:"🥛",s:"1 cup (150g)",cal:120,p:18,c:8,f:1,fib:0,cat:"Yogurt & Bowls"},
+ {n:"Hung Curd",e:"🥛",s:"1 bowl (120g)",cal:130,p:12,c:8,f:5,fib:0,cat:"Yogurt & Bowls"},
+ {n:"Curd + Jaggery",e:"🥛",s:"1 bowl (150g)",cal:160,p:6,c:24,f:5,fib:0,cat:"Yogurt & Bowls"},
+ {n:"Curd + Roasted Jeera",e:"🥛",s:"1 bowl (150g)",cal:110,p:6,c:8,f:5,fib:0,cat:"Yogurt & Bowls"},
+ {n:"Curd + Fruit Bowl",e:"🍓",s:"1 bowl (200g)",cal:180,p:7,c:26,f:4,fib:2,cat:"Yogurt & Bowls"},
+ {n:"Fruit Yogurt (flavoured)",e:"🍓",s:"1 cup (125g)",cal:160,p:5,c:28,f:3,fib:0,cat:"Yogurt & Bowls"},
+ {n:"Yogurt Smoothie",e:"🥤",s:"1 glass (300ml)",cal:250,p:10,c:38,f:6,fib:2,cat:"Yogurt & Bowls"},
+ {n:"Chia Yogurt Pudding",e:"🍮",s:"1 bowl (200g)",cal:240,p:12,c:24,f:10,fib:7,cat:"Yogurt & Bowls"},
+ {n:"Yogurt + Granola",e:"🥣",s:"1 bowl (200g)",cal:320,p:12,c:44,f:10,fib:4,cat:"Yogurt & Bowls"},
+ {n:"Smoothie Bowl (curd base)",e:"🍨",s:"1 bowl (250g)",cal:300,p:11,c:44,f:9,fib:6,cat:"Yogurt & Bowls"},
+
+ /* ---- salads ---- */
+ {n:"Cucumber Yogurt Salad",e:"🥒",s:"1 bowl (150g)",cal:90,p:5,c:9,f:4,fib:1,cat:"Salads & Sides"},
+ {n:"Tzatziki (yogurt dip)",e:"🥒",s:"1 bowl (120g)",cal:100,p:6,c:6,f:6,fib:1,cat:"Salads & Sides"},
+ {n:"Chickpea Salad",e:"🫘",s:"1 bowl (200g)",cal:260,p:12,c:34,f:8,fib:9,cat:"Salads & Sides"},
+ {n:"Rajma Salad",e:"🫘",s:"1 bowl (200g)",cal:240,p:12,c:32,f:6,fib:9,cat:"Salads & Sides"},
+ {n:"Sprouted Moong Salad",e:"🌱",s:"1 bowl (150g)",cal:160,p:10,c:24,f:2,fib:7,cat:"Salads & Sides"},
+ {n:"Corn Salad",e:"🌽",s:"1 bowl (150g)",cal:180,p:5,c:32,f:4,fib:4,cat:"Salads & Sides"},
+ {n:"Paneer Salad",e:"🧀",s:"1 bowl (200g)",cal:280,p:18,c:10,f:19,fib:2,cat:"Salads & Sides"},
+ {n:"Tofu Salad",e:"🟦",s:"1 bowl (200g)",cal:220,p:16,c:12,f:13,fib:3,cat:"Salads & Sides"},
+ {n:"Grilled Chicken Salad",e:"🍗",s:"1 bowl (250g)",cal:300,p:30,c:10,f:15,fib:3,cat:"Salads & Sides"},
+ {n:"Tuna Salad",e:"🐟",s:"1 bowl (200g)",cal:260,p:28,c:6,f:13,fib:2,cat:"Salads & Sides"},
+ {n:"Quinoa Salad",e:"🥗",s:"1 bowl (200g)",cal:320,p:10,c:44,f:12,fib:6,cat:"Salads & Sides"},
+ {n:"Beetroot Salad",e:"🫐",s:"1 bowl (150g)",cal:120,p:3,c:20,f:3,fib:4,cat:"Salads & Sides"},
+ {n:"Carrot Cucumber Salad",e:"🥕",s:"1 bowl (150g)",cal:70,p:2,c:12,f:2,fib:3,cat:"Salads & Sides"},
+ {n:"Fruit Salad",e:"🍉",s:"1 bowl (200g)",cal:150,p:2,c:36,f:1,fib:5,cat:"Salads & Sides"},
+ {n:"Fruit Salad + Curd",e:"🍉",s:"1 bowl (250g)",cal:220,p:8,c:40,f:3,fib:5,cat:"Salads & Sides"},
+ {n:"Russian Salad",e:"🥗",s:"1 bowl (150g)",cal:280,p:4,c:22,f:20,fib:2,cat:"Salads & Sides"},
+ {n:"Som Tam (papaya salad)",e:"🥗",s:"1 bowl (150g)",cal:140,p:3,c:26,f:3,fib:4,cat:"Salads & Sides"},
+
+ /* ---- cafe and bakery ---- */
+ {n:"Cappuccino",e:"☕",s:"1 cup (200ml)",cal:120,p:6,c:10,f:6,fib:0,cat:"Cafe & Bakery"},
+ {n:"Latte",e:"☕",s:"1 cup (250ml)",cal:150,p:8,c:12,f:8,fib:0,cat:"Cafe & Bakery"},
+ {n:"Flat White",e:"☕",s:"1 cup (200ml)",cal:130,p:7,c:10,f:7,fib:0,cat:"Cafe & Bakery"},
+ {n:"Espresso",e:"☕",s:"1 shot",cal:5,p:0,c:1,f:0,fib:0,cat:"Cafe & Bakery"},
+ {n:"Americano",e:"☕",s:"1 cup",cal:10,p:0,c:2,f:0,fib:0,cat:"Cafe & Bakery"},
+ {n:"Mocha",e:"☕",s:"1 cup (250ml)",cal:220,p:8,c:28,f:9,fib:1,cat:"Cafe & Bakery"},
+ {n:"Frappe",e:"🧋",s:"1 glass (350ml)",cal:320,p:7,c:44,f:13,fib:1,cat:"Cafe & Bakery"},
+ {n:"Hot Chocolate",e:"🍫",s:"1 cup (250ml)",cal:250,p:8,c:34,f:9,fib:2,cat:"Cafe & Bakery"},
+ {n:"Bubble Tea",e:"🧋",s:"1 glass (350ml)",cal:350,p:5,c:60,f:9,fib:0,cat:"Cafe & Bakery"},
+ {n:"Cinnamon Roll",e:"🌀",s:"1 piece",cal:350,p:6,c:50,f:14,fib:2,cat:"Cafe & Bakery"},
+ {n:"Danish Pastry",e:"🥐",s:"1 piece",cal:300,p:5,c:34,f:16,fib:1,cat:"Cafe & Bakery"},
+ {n:"Chocolate Croissant",e:"🥐",s:"1 piece",cal:320,p:6,c:38,f:16,fib:2,cat:"Cafe & Bakery"},
+ {n:"Blueberry Muffin",e:"🧁",s:"1 piece",cal:360,p:6,c:50,f:16,fib:2,cat:"Cafe & Bakery"},
+ {n:"Banana Bread",e:"🍌",s:"1 slice",cal:220,p:3,c:32,f:9,fib:1,cat:"Cafe & Bakery"},
+ {n:"Oatmeal Cookie",e:"🍪",s:"1 cookie",cal:140,p:2,c:20,f:6,fib:1,cat:"Cafe & Bakery"},
+
+ /* ---- indo-chinese and asian ---- */
+ {n:"Schezwan Fried Rice",e:"🍚",s:"1 plate (250g)",cal:380,p:8,c:58,f:13,fib:3,cat:"Chinese & Asian"},
+ {n:"Triple Schezwan Rice",e:"🍜",s:"1 plate (350g)",cal:550,p:14,c:72,f:22,fib:4,cat:"Chinese & Asian"},
+ {n:"Chilli Garlic Noodles",e:"🍜",s:"1 plate (250g)",cal:350,p:8,c:52,f:12,fib:3,cat:"Chinese & Asian"},
+ {n:"Veg Manchurian (gravy)",e:"🧆",s:"1 bowl (200g)",cal:300,p:7,c:34,f:15,fib:3,cat:"Chinese & Asian"},
+ {n:"Gobi Manchurian (dry)",e:"🥦",s:"1 plate (180g)",cal:320,p:6,c:36,f:17,fib:4,cat:"Chinese & Asian"},
+ {n:"Honey Chilli Potato",e:"🥔",s:"1 plate (180g)",cal:340,p:4,c:46,f:16,fib:4,cat:"Chinese & Asian"},
+ {n:"Crispy Corn",e:"🌽",s:"1 plate (150g)",cal:280,p:5,c:34,f:14,fib:4,cat:"Chinese & Asian"},
+ {n:"American Chopsuey",e:"🍜",s:"1 plate (300g)",cal:420,p:10,c:58,f:16,fib:4,cat:"Chinese & Asian"},
+ {n:"Dragon Chicken",e:"🐉",s:"1 plate (200g)",cal:380,p:26,c:24,f:20,fib:2,cat:"Chinese & Asian"},
+ {n:"Paneer Momos",e:"🥟",s:"6 pieces",cal:280,p:10,c:36,f:10,fib:2,cat:"Chinese & Asian"},
+ {n:"Fried Momos",e:"🥟",s:"6 pieces",cal:330,p:10,c:38,f:15,fib:2,cat:"Chinese & Asian"},
+ {n:"Tandoori Momos",e:"🥟",s:"6 pieces",cal:300,p:12,c:34,f:12,fib:2,cat:"Chinese & Asian"},
+ {n:"Thai Green Curry",e:"🍛",s:"1 bowl (250g)",cal:280,p:12,c:16,f:19,fib:3,cat:"Chinese & Asian"},
+ {n:"Thai Red Curry",e:"🍛",s:"1 bowl (250g)",cal:300,p:12,c:18,f:21,fib:3,cat:"Chinese & Asian"},
+ {n:"Khao Suey",e:"🍜",s:"1 bowl (300g)",cal:420,p:16,c:48,f:18,fib:4,cat:"Chinese & Asian"},
+ {n:"Veg Sushi Roll",e:"🍣",s:"6 pieces",cal:200,p:4,c:38,f:3,fib:2,cat:"Chinese & Asian"},
+
+ /* ---- cafe plates and fast food ---- */
+ {n:"Cheese Garlic Bread",e:"🧄",s:"4 pieces",cal:320,p:10,c:38,f:14,fib:2,cat:"Fast Food & World"},
+ {n:"Peri Peri Fries",e:"🍟",s:"1 medium",cal:320,p:4,c:42,f:15,fib:4,cat:"Fast Food & World"},
+ {n:"Loaded Cheese Fries",e:"🍟",s:"1 plate",cal:450,p:10,c:48,f:24,fib:4,cat:"Fast Food & World"},
+ {n:"Chicken Popcorn",e:"🍗",s:"1 regular",cal:280,p:18,c:22,f:13,fib:1,cat:"Fast Food & World"},
+ {n:"Chicken Wings",e:"🍗",s:"6 pieces",cal:420,p:30,c:12,f:28,fib:1,cat:"Fast Food & World"},
+ {n:"Bombay Grilled Sandwich",e:"🥪",s:"1 sandwich",cal:320,p:9,c:42,f:13,fib:5,cat:"Fast Food & World"},
+ {n:"Cheese Grilled Sandwich",e:"🥪",s:"1 sandwich",cal:380,p:13,c:40,f:19,fib:3,cat:"Fast Food & World"},
+ {n:"Corn Cheese Balls",e:"🧆",s:"5 pieces",cal:300,p:8,c:32,f:15,fib:2,cat:"Fast Food & World"},
+ {n:"Veg Cheese Burger",e:"🍔",s:"1 burger",cal:380,p:12,c:46,f:16,fib:4,cat:"Fast Food & World"},
+ {n:"Zinger Burger",e:"🍔",s:"1 burger",cal:480,p:22,c:48,f:22,fib:3,cat:"Fast Food & World"},
+ {n:"Pink Sauce Pasta",e:"🍝",s:"1 plate (300g)",cal:420,p:12,c:54,f:17,fib:4,cat:"Pasta & Italian"},
+ {n:"Burrito Bowl (veg)",e:"🌯",s:"1 bowl",cal:450,p:14,c:62,f:16,fib:9,cat:"Fast Food & World"},
+ {n:"Falafel Plate",e:"🧆",s:"1 plate",cal:380,p:14,c:40,f:18,fib:8,cat:"Fast Food & World"},
+ {n:"Pita + Hummus",e:"🫓",s:"1 pita + dip",cal:300,p:10,c:40,f:11,fib:6,cat:"Fast Food & World"},
+ {n:"Veg Sizzler",e:"🍽️",s:"1 plate",cal:550,p:14,c:62,f:26,fib:8,cat:"Fast Food & World"},
+ {n:"Veg Au Gratin",e:"🧀",s:"1 bowl (250g)",cal:380,p:12,c:34,f:22,fib:3,cat:"Fast Food & World"},
+ {n:"Mashed Potatoes",e:"🥔",s:"1 bowl (150g)",cal:180,p:3,c:24,f:8,fib:2,cat:"Fast Food & World"},
+
+ /* ---- everyday sabzis ---- */
+ {n:"Aloo Beans",e:"🫛",s:"1 bowl (150g)",cal:180,p:5,c:22,f:8,fib:5,cat:"Vegetables"},
+ {n:"Gajar Matar",e:"🥕",s:"1 bowl (150g)",cal:160,p:4,c:18,f:8,fib:5,cat:"Vegetables"},
+ {n:"Aloo Gobi Matar",e:"🥦",s:"1 bowl (200g)",cal:200,p:6,c:24,f:9,fib:5,cat:"Vegetables"},
+ {n:"Gobi Matar",e:"🥦",s:"1 bowl (200g)",cal:190,p:6,c:20,f:9,fib:5,cat:"Vegetables"},
+ {n:"Gobi Masala",e:"🥦",s:"1 bowl (200g)",cal:200,p:5,c:18,f:12,fib:5,cat:"Vegetables"},
+ {n:"Aloo Palak",e:"🥬",s:"1 bowl (200g)",cal:200,p:6,c:22,f:10,fib:4,cat:"Vegetables"},
+ {n:"Palak Chana",e:"🥬",s:"1 bowl (200g)",cal:240,p:12,c:26,f:9,fib:9,cat:"Vegetables"},
+ {n:"Chana Saag",e:"🥬",s:"1 bowl (200g)",cal:260,p:12,c:26,f:12,fib:9,cat:"Vegetables"},
+ {n:"Corn Palak",e:"🌽",s:"1 bowl (200g)",cal:260,p:8,c:26,f:14,fib:5,cat:"Vegetables"},
+ {n:"Kurkuri Bhindi",e:"🌿",s:"1 bowl (150g)",cal:220,p:4,c:18,f:15,fib:5,cat:"Vegetables"},
+ {n:"Dahi Bhindi",e:"🌿",s:"1 bowl (150g)",cal:190,p:5,c:16,f:12,fib:4,cat:"Vegetables"},
+ {n:"Bharwa Baingan",e:"🍆",s:"1 bowl (200g)",cal:250,p:5,c:20,f:17,fib:6,cat:"Vegetables"},
+ {n:"Bharli Vangi",e:"🍆",s:"1 bowl (200g)",cal:280,p:6,c:22,f:19,fib:6,cat:"Vegetables"},
+ {n:"Bharwa Karela",e:"🥒",s:"2 pieces",cal:240,p:5,c:20,f:16,fib:5,cat:"Vegetables"},
+ {n:"Aloo Tamatar (rasedar)",e:"🍅",s:"1 bowl (200g)",cal:170,p:4,c:22,f:7,fib:3,cat:"Vegetables"},
+ {n:"Tamatar ki Sabzi",e:"🍅",s:"1 bowl (150g)",cal:160,p:3,c:16,f:9,fib:3,cat:"Vegetables"},
+ {n:"Aloo Pyaz",e:"🧅",s:"1 bowl (150g)",cal:190,p:4,c:24,f:9,fib:3,cat:"Vegetables"},
+ {n:"Achari Aloo",e:"🥔",s:"1 bowl (150g)",cal:210,p:4,c:26,f:10,fib:4,cat:"Vegetables"},
+ {n:"Aloo Kaddu",e:"🎃",s:"1 bowl (200g)",cal:180,p:4,c:24,f:8,fib:4,cat:"Vegetables"},
+ {n:"Kaddu ki Sabzi",e:"🎃",s:"1 bowl (150g)",cal:150,p:3,c:18,f:8,fib:3,cat:"Vegetables"},
+ {n:"Arbi Fry",e:"🥔",s:"1 bowl (150g)",cal:220,p:3,c:26,f:12,fib:3,cat:"Vegetables"},
+ {n:"Arbi Masala",e:"🥔",s:"1 bowl (200g)",cal:200,p:3,c:24,f:10,fib:3,cat:"Vegetables"},
+ {n:"Suran / Yam Sabzi",e:"🥔",s:"1 bowl (150g)",cal:200,p:3,c:26,f:9,fib:4,cat:"Vegetables"},
+ {n:"Kacche Kele ki Sabzi",e:"🍌",s:"1 bowl (150g)",cal:200,p:3,c:28,f:9,fib:4,cat:"Vegetables"},
+ {n:"Kathal (Jackfruit) Sabzi",e:"🟢",s:"1 bowl (200g)",cal:230,p:5,c:26,f:12,fib:5,cat:"Vegetables"},
+ {n:"Sem ki Sabzi",e:"🫛",s:"1 bowl (150g)",cal:150,p:4,c:16,f:8,fib:5,cat:"Vegetables"},
+ {n:"Gawar Phali",e:"🫛",s:"1 bowl (150g)",cal:150,p:4,c:16,f:8,fib:6,cat:"Vegetables"},
+ {n:"Chawli / Long Beans",e:"🫛",s:"1 bowl (150g)",cal:140,p:4,c:15,f:7,fib:5,cat:"Vegetables"},
+ {n:"Parwal Sabzi",e:"🥒",s:"1 bowl (150g)",cal:150,p:3,c:14,f:9,fib:4,cat:"Vegetables"},
+ {n:"Drumstick Sabzi",e:"🌿",s:"1 bowl (150g)",cal:140,p:4,c:14,f:8,fib:5,cat:"Vegetables"},
+ {n:"Beetroot Sabzi",e:"🟣",s:"1 bowl (150g)",cal:150,p:3,c:20,f:6,fib:4,cat:"Vegetables"},
+ {n:"Cabbage Matar",e:"🥬",s:"1 bowl (150g)",cal:150,p:4,c:16,f:8,fib:5,cat:"Vegetables"},
+ {n:"Capsicum Besan",e:"🫑",s:"1 bowl (150g)",cal:220,p:7,c:20,f:13,fib:4,cat:"Vegetables"},
+ {n:"Baby Corn Masala",e:"🌽",s:"1 bowl (200g)",cal:230,p:6,c:24,f:13,fib:4,cat:"Vegetables"},
+ {n:"Matar Mushroom",e:"🍄",s:"1 bowl (200g)",cal:220,p:7,c:16,f:14,fib:4,cat:"Vegetables"},
+ {n:"Mushroom Do Pyaza",e:"🍄",s:"1 bowl (200g)",cal:230,p:6,c:16,f:16,fib:3,cat:"Vegetables"},
+ {n:"Malai Broccoli",e:"🥦",s:"1 bowl (150g)",cal:260,p:9,c:12,f:20,fib:4,cat:"Vegetables"},
+ {n:"Veg Jalfrezi",e:"🫑",s:"1 bowl (200g)",cal:230,p:6,c:20,f:14,fib:5,cat:"Vegetables"},
+ {n:"Ghiya Chana Dal",e:"🥒",s:"1 bowl (200g)",cal:200,p:9,c:22,f:8,fib:6,cat:"Vegetables"},
+ {n:"Turai Chana Dal",e:"🥒",s:"1 bowl (200g)",cal:190,p:9,c:20,f:8,fib:6,cat:"Vegetables"},
+ {n:"Soya Keema",e:"🟤",s:"1 bowl (180g)",cal:260,p:22,c:18,f:12,fib:7,cat:"Vegetables"},
+ {n:"Aloo Soyabean",e:"🟤",s:"1 bowl (200g)",cal:240,p:16,c:22,f:11,fib:6,cat:"Vegetables"},
+ {n:"Paneer Lababdar",e:"🧀",s:"1 bowl (200g)",cal:350,p:16,c:18,f:24,fib:3,cat:"Vegetables"},
+ {n:"Paneer Kali Mirch",e:"🧀",s:"1 bowl (200g)",cal:330,p:16,c:14,f:24,fib:2,cat:"Vegetables"},
+
+ /* ---- sandwiches, subs and wraps ---- */
+ {n:"Chicken Mayo Sandwich",e:"🥪",s:"1 sandwich",cal:380,p:22,c:36,f:17,fib:3,cat:"Sandwiches & Wraps"},
+ {n:"Chicken Tikka Sandwich",e:"🥪",s:"1 sandwich",cal:400,p:24,c:38,f:17,fib:3,cat:"Sandwiches & Wraps"},
+ {n:"Chicken Salami Sandwich",e:"🥪",s:"1 sandwich",cal:340,p:18,c:34,f:15,fib:2,cat:"Sandwiches & Wraps"},
+ {n:"Boiled Egg Sandwich",e:"🥚",s:"1 sandwich",cal:300,p:14,c:32,f:13,fib:3,cat:"Sandwiches & Wraps"},
+ {n:"Egg Mayo Sandwich",e:"🥚",s:"1 sandwich",cal:350,p:14,c:32,f:18,fib:3,cat:"Sandwiches & Wraps"},
+ {n:"Tuna Sandwich",e:"🐟",s:"1 sandwich",cal:320,p:22,c:32,f:12,fib:3,cat:"Sandwiches & Wraps"},
+ {n:"Paneer Tikka Sandwich",e:"🧀",s:"1 sandwich",cal:400,p:16,c:38,f:20,fib:4,cat:"Sandwiches & Wraps"},
+ {n:"Corn Cheese Sandwich",e:"🌽",s:"1 sandwich",cal:360,p:12,c:42,f:16,fib:4,cat:"Sandwiches & Wraps"},
+ {n:"Cheese Chutney Sandwich",e:"🥪",s:"1 sandwich",cal:320,p:11,c:38,f:14,fib:4,cat:"Sandwiches & Wraps"},
+ {n:"Grilled Cheese Sandwich",e:"🧀",s:"1 sandwich",cal:380,p:14,c:36,f:20,fib:2,cat:"Sandwiches & Wraps"},
+ {n:"Cucumber Sandwich",e:"🥒",s:"1 sandwich",cal:200,p:6,c:30,f:6,fib:3,cat:"Sandwiches & Wraps"},
+ {n:"Peanut Butter Sandwich",e:"🥜",s:"1 sandwich",cal:340,p:12,c:34,f:18,fib:4,cat:"Sandwiches & Wraps"},
+ {n:"Jam Sandwich",e:"🍓",s:"1 sandwich",cal:260,p:6,c:44,f:6,fib:2,cat:"Sandwiches & Wraps"},
+ {n:"BLT Sandwich",e:"🥓",s:"1 sandwich",cal:400,p:18,c:34,f:21,fib:3,cat:"Sandwiches & Wraps"},
+ {n:"Veg Sub (6 inch)",e:"🥖",s:"1 sub",cal:320,p:11,c:50,f:8,fib:6,cat:"Sandwiches & Wraps"},
+ {n:"Chicken Sub (6 inch)",e:"🥖",s:"1 sub",cal:380,p:24,c:48,f:10,fib:5,cat:"Sandwiches & Wraps"},
+ {n:"Veg Wrap",e:"🌯",s:"1 wrap",cal:320,p:9,c:44,f:12,fib:5,cat:"Sandwiches & Wraps"},
+ {n:"Chicken Wrap",e:"🌯",s:"1 wrap",cal:400,p:25,c:40,f:16,fib:4,cat:"Sandwiches & Wraps"},
+ {n:"Egg Wrap",e:"🌯",s:"1 wrap",cal:350,p:16,c:40,f:14,fib:4,cat:"Sandwiches & Wraps"},
+ {n:"Paneer Wrap",e:"🌯",s:"1 wrap",cal:390,p:15,c:42,f:18,fib:4,cat:"Sandwiches & Wraps"},
+
+ /* ---- avocado, and what it gets mixed into ---- */
+ {n:"Avocado Sandwich",e:"🥑",s:"1 sandwich",cal:340,p:9,c:34,f:19,fib:8,cat:"Avocado"},
+ {n:"Avocado Chicken Sandwich",e:"🥑",s:"1 sandwich",cal:430,p:26,c:34,f:22,fib:7,cat:"Avocado"},
+ {n:"Avocado + Boiled Eggs",e:"🥑",s:"1 plate",cal:340,p:16,c:12,f:26,fib:7,cat:"Avocado"},
+ {n:"Avocado Roti Wrap",e:"🥑",s:"1 wrap",cal:380,p:11,c:42,f:19,fib:9,cat:"Avocado"},
+ {n:"Avocado Paratha",e:"🥑",s:"1 piece",cal:320,p:8,c:34,f:17,fib:7,cat:"Avocado"},
+ {n:"Avocado Chaat",e:"🥑",s:"1 bowl (150g)",cal:260,p:5,c:22,f:18,fib:9,cat:"Avocado"},
+ {n:"Avocado Raita",e:"🥑",s:"1 bowl (150g)",cal:200,p:6,c:12,f:15,fib:6,cat:"Avocado"},
+ {n:"Avocado Curd Bowl",e:"🥑",s:"1 bowl (200g)",cal:300,p:10,c:20,f:20,fib:8,cat:"Avocado"},
+ {n:"Avocado Milkshake",e:"🥑",s:"1 glass (300ml)",cal:380,p:9,c:42,f:20,fib:7,cat:"Avocado"},
+ {n:"Avocado Ice Cream",e:"🥑",s:"1 scoop",cal:250,p:4,c:26,f:15,fib:4,cat:"Avocado"},
+ {n:"Avocado Dip",e:"🥑",s:"2 tbsp",cal:90,p:1,c:4,f:8,fib:3,cat:"Avocado"},
+];
+
+/* Meal order doubles as the haldi ramp: light at dawn, dark at night.
+   The same tone marks each meal's slabs in the rail and its section header. */
+const MEALS = [
+  {k:"breakfast",l:"Breakfast",e:"\u{1F305}",tone:"var(--r1)"},
+  {k:"lunch",    l:"Lunch",    e:"☀️",tone:"var(--r2)"},
+  {k:"snack",    l:"Snacks",   e:"\u{1FAD6}",tone:"var(--r3)"},
+  {k:"dinner",   l:"Dinner",   e:"\u{1F319}",tone:"var(--r4)"},
+];
+
+const DEFAULT_HABITS = [
+ {id:"h_workout",name:"Workout",e:"\u{1F3CB}️",type:"check"},
+ {id:"h_sleep",name:"Sleep 7+ hrs",e:"\u{1F634}",type:"check"},
+ {id:"h_steps",name:"10k Steps",e:"\u{1F45F}",type:"check"},
+ {id:"h_meditate",name:"Meditate",e:"\u{1F9D8}",type:"check"},
+ {id:"h_fruit",name:"Eat a fruit",e:"\u{1F34E}",type:"count",target:2},
+];
+
+/* ============================ CONFIG ============================ */
+/* Paste these from your Supabase project:
+     Dashboard -> Project Settings -> Data API
+   The anon key is designed to be public: row level security in the database is
+   what protects the data, not the secrecy of this string. Never paste the
+   service_role key here - that one bypasses every policy.
+   Leave both empty and the app runs exactly as before, saving only on this
+   device with no account. */
+const SUPABASE_URL="https://cjwsaanaeruswbznjipg.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_b9W_cflXEF57T6BcLmYvqw_e9BoyG_l";
+const CLOUD=!!(SUPABASE_URL&&SUPABASE_PUBLISHABLE_KEY);
+
+/* ============================ STATE ============================ */
+const KEY="nourish.v1";                                    // device-only mode
+const todayStr=()=>new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD local
+let sb=null;    // supabase client, once loaded
+let USER=null;  // {id,email} when signed in
+
+// Signed-in users get their own cache so two accounts on one phone never read
+// each other's logs off disk.
+function cacheKey(){ return USER?"nourish.cache."+USER.id:KEY; }
+
+function loadState(){
+  let s;
+  try{ s=JSON.parse(localStorage.getItem(cacheKey())); }catch(e){ s=null; }
+  if(!s||typeof s!=="object") s={};
+  s.profile=Object.assign({name:"",calGoal:2000,p:120,c:220,f:60,fib:30,waterGoal:2500,glass:250,
+    age:0,sex:"",height:0,weight:0,job:"",exercise:"",goal:"maintain"},s.profile||{});
+  s.days=s.days||{};
+  s.habits=s.habits||DEFAULT_HABITS.map(h=>Object.assign({},h));
+  s.customFoods=s.customFoods||[];
+  return s;
+}
+let S=loadState();
+
+// Sandboxed frames and some private-browsing modes throw on any write. Find out
+// once at startup so the app can say so instead of quietly dropping every log.
+const STORAGE_OK=(function(){
+  try{ localStorage.setItem(KEY+".probe","1"); localStorage.removeItem(KEY+".probe"); return true; }
+  catch(e){ return false; }
+})();
+function day(d){ d=d||todayStr(); if(!S.days[d]) S.days[d]={meals:[],water:0,habits:{}}; return S.days[d]; }
+
+/* ============================ SYNC ============================ */
+/* save() takes a note of WHAT changed so each edit becomes one targeted write
+   instead of overwriting the whole account. That is what lets two devices edit
+   the same day without erasing each other. Passing nothing saves locally only. */
+function save(what){
+  try{ localStorage.setItem(cacheKey(),JSON.stringify(S)); }catch(e){}
+  if(CLOUD&&USER&&sb&&what) push(what);
+}
+const uid=()=>USER.id;
+// Name and email are copied onto the row so the table says who each one belongs
+// to. The email is stamped from the live session, never edited by hand.
+const rowProfile=()=>({user_id:uid(),name:S.profile.name||"",email:USER.email||"",
+  cal_goal:S.profile.calGoal,p:S.profile.p,c:S.profile.c,
+  f:S.profile.f,fib:S.profile.fib,water_goal:S.profile.waterGoal,glass:S.profile.glass,
+  age:S.profile.age||0,sex:S.profile.sex||"",height:S.profile.height||0,
+  weight:S.profile.weight||0,job:S.profile.job||"",exercise:S.profile.exercise||"",
+  goal:S.profile.goal||"maintain",
+  updated_at:new Date().toISOString()});
+const rowDay=ds=>({user_id:uid(),day:ds,water:day(ds).water||0,habit_state:day(ds).habits||{}});
+const rowMeal=(m,ds)=>({user_id:uid(),id:m.id,day:ds,meal:m.meal,name:m.name,emoji:m.e||"",
+  cal:m.cal,p:m.p,c:m.c,f:m.f,fib:m.fib,qty_label:m.qtyLabel||""});
+const rowHabit=h=>({user_id:uid(),id:h.id,name:h.name,emoji:h.e,kind:h.type,target:h.target||1});
+const rowFood=f=>({user_id:uid(),id:f.id||(f.id="f"+Date.now()+Math.random().toString(36).slice(2,6)),
+  name:f.n,emoji:f.e,serving:f.s,cal:f.cal,p:f.p,c:f.c,f:f.f,fib:f.fib});
+
+async function push(w){
+  try{
+    if(w.profile) await chk(sb.from("profiles").upsert(rowProfile()));
+    if(w.day)     await chk(sb.from("day_logs").upsert(rowDay(w.day)));
+    if(w.meal)    await chk(sb.from("meal_entries").insert(rowMeal(w.meal,w.day||todayStr())));
+    if(w.unmeal)  await chk(sb.from("meal_entries").delete().eq("user_id",uid()).eq("id",w.unmeal));
+    if(w.habit)   await chk(sb.from("habits").upsert(rowHabit(w.habit)));
+    if(w.unhabit) await chk(sb.from("habits").delete().eq("user_id",uid()).eq("id",w.unhabit));
+    if(w.food)    await chk(sb.from("custom_foods").insert(rowFood(w.food)));
+    if(w.wipe)    await wipeCloud();
+    if(w.bulk)    await pushAll();
+  }catch(e){ syncFailed(e); }
+}
+// supabase-js resolves with {error} rather than throwing, so failures are easy
+// to miss. Turn them back into exceptions.
+async function chk(q){ const r=await q; if(r&&r.error) throw r.error; return r; }
+function syncFailed(e){
+  console.error("[sync]",e);
+  toast("Not saved to your account — check your connection");
+}
+async function pushAll(){
+  await chk(sb.from("profiles").upsert(rowProfile()));
+  if(S.habits.length)      await chk(sb.from("habits").upsert(S.habits.map(rowHabit)));
+  if(S.customFoods.length) await chk(sb.from("custom_foods").upsert(S.customFoods.map(rowFood)));
+  const dayRows=[],mealRows=[];
+  Object.keys(S.days).forEach(ds=>{
+    const d=S.days[ds];
+    dayRows.push({user_id:uid(),day:ds,water:d.water||0,habit_state:d.habits||{}});
+    (d.meals||[]).forEach(m=>mealRows.push(rowMeal(m,ds)));
+  });
+  if(dayRows.length)  await chk(sb.from("day_logs").upsert(dayRows));
+  if(mealRows.length) await chk(sb.from("meal_entries").upsert(mealRows));
+}
+async function wipeCloud(){
+  for(const t of ["meal_entries","day_logs","habits","custom_foods"])
+    await chk(sb.from(t).delete().eq("user_id",uid()));
+  await chk(sb.from("profiles").upsert(rowProfile()));
+}
+// Day rows are tiny, so pull enough history for streaks; meals only need to
+// cover today plus the week chart.
+async function pull(){
+  const back=n=>new Date(Date.now()-n*86400000).toLocaleDateString("en-CA");
+  const [prof,hab,foods,days,meals]=await Promise.all([
+    sb.from("profiles").select("*").eq("user_id",uid()).maybeSingle(),
+    sb.from("habits").select("*").eq("user_id",uid()),
+    sb.from("custom_foods").select("*").eq("user_id",uid()).order("created_at",{ascending:false}),
+    sb.from("day_logs").select("*").eq("user_id",uid()).gte("day",back(400)),
+    // Same window as day_logs: the You tab charts a year, so a fortnight of
+    // meals is not enough to draw it.
+    sb.from("meal_entries").select("*").eq("user_id",uid()).gte("day",back(400)).order("created_at"),
+  ]);
+  [prof,hab,foods,days,meals].forEach(r=>{ if(r.error) throw r.error; });
+
+  if(prof.data){
+    const d=prof.data;
+    S.profile={name:d.name||"",calGoal:d.cal_goal,p:d.p,c:d.c,f:d.f,fib:d.fib,
+      waterGoal:d.water_goal,glass:d.glass,
+      age:d.age||0,sex:d.sex||"",height:d.height||0,weight:+d.weight||0,
+      job:d.job||"",exercise:d.exercise||"",goal:d.goal||"maintain"};
+  }
+  // An account made before the name existed carries it in its auth metadata.
+  if(!S.profile.name&&USER.name) S.profile.name=USER.name;
+  S.days={};
+  (days.data||[]).forEach(r=>{ S.days[r.day]={meals:[],water:r.water||0,habits:r.habit_state||{}}; });
+  (meals.data||[]).forEach(r=>{
+    const d=S.days[r.day]||(S.days[r.day]={meals:[],water:0,habits:{}});
+    d.meals.push({id:r.id,name:r.name,e:r.emoji,meal:r.meal,cal:+r.cal,p:+r.p,c:+r.c,
+      f:+r.f,fib:+r.fib,qtyLabel:r.qty_label});
+  });
+  S.habits=(hab.data||[]).map(r=>({id:r.id,name:r.name,e:r.emoji,type:r.kind,target:r.target}));
+  S.customFoods=(foods.data||[]).map(r=>({id:r.id,n:r.name,e:r.emoji,s:r.serving,cal:+r.cal,
+    p:+r.p,c:+r.c,f:+r.f,fib:+r.fib,cat:"My Foods",custom:true}));
+
+  // First sign-in: give the account a profile row and the starter habits.
+  // Also stamp a row that predates the name and email columns.
+  // Local state is finished and saved BEFORE either write goes out: a write
+  // that fails (a column this deploy expects and the database has not got yet)
+  // must not leave the account with an empty habits tab.
+  const seeding=!S.habits.length;
+  if(seeding) S.habits=DEFAULT_HABITS.map(h=>Object.assign({},h));
+  save();
+  if(!prof.data||!prof.data.email||(!prof.data.name&&S.profile.name))
+    await chk(sb.from("profiles").upsert(rowProfile()));
+  if(seeding) await chk(sb.from("habits").upsert(S.habits.map(rowHabit)));
+}
+
+/* ============================ HELPERS ============================ */
+const $=(s,r=document)=>r.querySelector(s);
+const $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+const round=n=>Math.round(n||0);
+const pct=(v,g)=>g>0?clamp(v/g,0,1)*100:0;
+// Food and habit names come from user input and from imported backups, so
+// every interpolated string goes through here before it reaches innerHTML.
+const ESCS={"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"};
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>ESCS[c]);
+
+function sumMeals(meals){
+  return (meals||[]).reduce((t,m)=>{
+    t.cal+=m.cal||0; t.p+=m.p||0; t.c+=m.c||0; t.f+=m.f||0; t.fib+=m.fib||0; return t;
+  },{cal:0,p:0,c:0,f:0,fib:0});
+}
+function allFoods(){ return S.customFoods.concat(FOODS); }
+function mealOf(k){ return MEALS.find(m=>m.k===k)||MEALS[2]; }
+
+function streak(habitId){
+  const h=S.habits.find(x=>x.id===habitId); if(!h) return 0;
+  let count=0; const now=Date.now();
+  for(let i=0;i<400;i++){
+    const ds=new Date(now-i*86400000).toLocaleDateString("en-CA");
+    if(isHabitDone(h,S.days[ds])) count++;
+    else if(i===0) continue;   // today not ticked yet - streak is still alive
+    else break;
+  }
+  return count;
+}
+function isHabitDone(h,rec){
+  if(!rec||!rec.habits) return false;
+  const v=rec.habits[h.id];
+  return h.type==="count" ? (v||0)>=(h.target||1) : !!v;
+}
+
+/* ============================ RENDER ============================ */
+let TAB="today";
+// Which day the Habits tab is ticking. Leaving the tab brings it back to today.
+let habitDate=todayStr();
+function render(){
+  const v=$("#view");
+  v.innerHTML = TAB==="today" ? viewToday()
+              : TAB==="habits" ? viewHabits()
+              : TAB==="foods"  ? viewFoods()
+              : viewYou();
+  bind();
+  $$("#nav button").forEach(b=>b.classList.toggle("on",b.dataset.tab===TAB));
+}
+function header(title){
+  const ds=new Date().toLocaleDateString("en-US",{weekday:"long",month:"short",day:"numeric"});
+  return `<div class="top"><div><div class="date">${esc(ds)}</div><h1>${esc(title)}</h1></div>
+    <button class="iconbtn" data-act="theme" aria-label="Switch light or dark">◐</button></div>`
+    +(STORAGE_OK?"":`<div class="warn" role="alert"><span>⚠</span><span>
+      <b>Nothing here will be saved</b>This browser is blocking storage, so your
+      logs disappear when you close the tab. Open the app from its own web address
+      to keep them.</span></div>`);
+}
+
+/* ---------- SIGNATURE: the budget rail ---------- */
+function rail(items,goal){
+  const total=items.reduce((a,b)=>a+(b.cal||0),0);
+  const max=Math.max(goal||0,total)||1;
+  // ordered breakfast -> dinner so the ramp reads light to dark, left to right
+  const segs=[];
+  MEALS.forEach(m=>items.filter(x=>x.meal===m.k)
+    .forEach(x=>segs.push({w:(x.cal||0)/max*100,tone:m.tone,n:x.name,cal:x.cal})));
+  const goalLeft=(goal||0)/max*100;
+  const key=MEALS.map(m=>{
+    const c=items.filter(x=>x.meal===m.k).reduce((a,b)=>a+(b.cal||0),0);
+    return c>0?`<span><i class="sw" style="background:${m.tone}"></i>${esc(m.l)} ${round(c)}</span>`:"";
+  }).join("");
+  return `<div class="rail">
+    <div class="rail-bar">
+      <div class="rail-track">${
+        segs.map(s=>`<i class="seg" style="width:${s.w}%;background:${s.tone}" title="${esc(s.n)} · ${round(s.cal)} kcal"></i>`).join("")
+      }</div>
+      ${total>0?`<div class="rail-goal" style="left:calc(${goalLeft}% - 1px)"></div>`:""}
+      ${total===0?`<div class="rail-empty">Nothing logged yet</div>`:""}
+    </div>
+    ${key?`<div class="rail-key">${key}</div>`:""}
+  </div>`;
+}
+function macroRow(label,val,goal,tone){
+  // The bar caps at 100%, so past the goal the number carries the news instead.
+  const over=goal>0&&val>goal;
+  return `<div class="mrow">
+    <span class="mk">${label}</span>
+    <div class="mtrack"><i style="width:${pct(val,goal)}%;background:${tone}"></i></div>
+    <span class="mv"${over?' style="color:var(--danger)"':""}>${round(val)}<em>/${round(goal)}g</em></span>
+  </div>`;
+}
+
+/* ---------- TODAY ---------- */
+function viewToday(){
+  const t=day(), tot=sumMeals(t.meals), pr=S.profile;
+  const left=pr.calGoal-tot.cal, over=left<0;
+  return header("Today")+
+  `<section class="card hero">
+    <div class="lede">
+      <span class="num big${over?" over":""}">${round(Math.abs(left))}</span>
+      <span class="unit">kcal ${over?"over":"left"}</span>
+    </div>
+    <div class="sub">${round(tot.cal)} eaten · ${round(pr.calGoal)} goal</div>
+    ${rail(t.meals,pr.calGoal)}
+    <div class="macros">
+      ${macroRow("Protein",tot.p,pr.p,"var(--m-p)")}
+      ${macroRow("Carbs",tot.c,pr.c,"var(--m-c)")}
+      ${macroRow("Fat",tot.f,pr.f,"var(--m-f)")}
+      ${macroRow("Fibre",tot.fib,pr.fib,"var(--m-fib)")}
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Water <button data-act="water-goal">Goal · ${(pr.waterGoal/1000).toFixed(2)}L</button></h2>
+    <div class="water-row">
+      <div class="glass"><div class="fill" style="height:${pct(t.water,pr.waterGoal)}%"></div></div>
+      <div class="water-info">
+        <div class="num">${(t.water/1000).toFixed(2)}<span style="font-size:13px;color:var(--ink-3)">L</span></div>
+        <div class="sub">${t.water} of ${pr.waterGoal} ml · ${Math.round(t.water/pr.glass)} glasses</div>
+      </div>
+    </div>
+    <div class="water-btns">
+      <button class="chip water" data-water="${pr.glass}">Glass · ${pr.glass}ml</button>
+      <button class="chip water" data-water="500">500ml</button>
+      <button class="chip water" data-water="1000">1L</button>
+      <button class="chip minus" data-water="-${pr.glass}" aria-label="Remove one glass">−</button>
+    </div>
+  </section>
+
+  ${MEALS.map(m=>mealGroup(m,t)).join("")}`;
+}
+
+function mealGroup(m,t){
+  const items=t.meals.filter(x=>x.meal===m.k);
+  const tot=sumMeals(items);
+  return `<section class="card meal${items.length?"":" is-empty"}" style="--tone:${m.tone}">
+    <div class="meal-head">
+      <span class="em">${m.e}</span>
+      <span class="t">${esc(m.l)}</span>
+      <span class="cal">${items.length?round(tot.cal)+" kcal":"—"}</span>
+      <button class="meal-add" data-add="${m.k}">+ Add</button>
+    </div>
+    ${items.length?`<div class="meal-tot">
+      <span>Protein <b>${round(tot.p)}g</b></span>
+      <span>Carbs <b>${round(tot.c)}g</b></span>
+      <span>Fat <b>${round(tot.f)}g</b></span>
+      <span>Fibre <b>${round(tot.fib)}g</b></span>
+    </div>`:""}
+    ${items.map(itemRow).join("")}
+  </section>`;
+}
+// Every logged item carries its own macro breakdown, visible without a tap.
+function itemRow(x){
+  return `<div class="fi">
+    <span class="fi-em">${esc(x.e||"\u{1F37D}️")}</span>
+    <div class="fi-b">
+      <div class="fi-n">${esc(x.name)}</div>
+      <div class="fi-q">${esc(x.qtyLabel||"")}</div>
+      <div class="fi-macros">
+        <b style="--tone:var(--m-p)">P ${round(x.p)}g</b>
+        <b style="--tone:var(--m-c)">C ${round(x.c)}g</b>
+        <b style="--tone:var(--m-f)">F ${round(x.f)}g</b>
+        <b style="--tone:var(--m-fib)">Fibre ${round(x.fib)}g</b>
+      </div>
+    </div>
+    <div class="fi-cal">${round(x.cal)}</div>
+    <button class="del" data-del="${esc(x.id)}" aria-label="Remove ${esc(x.name)}">✕</button>
+  </div>`;
+}
+
+/* ---------- HABITS ---------- */
+/* Habits get ticked late: you remember the walk after midnight, or forget to
+   open the app for two days. The day stepper backdates a tick without letting
+   you tick a day that has not happened. */
+function dayLabel(ds){
+  const diff=Math.round((new Date(todayStr()+"T00:00:00")-new Date(ds+"T00:00:00"))/86400000);
+  if(diff===0) return "Today";
+  if(diff===1) return "Yesterday";
+  return new Date(ds+"T00:00:00").toLocaleDateString("en-US",{weekday:"long"});
+}
+function viewHabits(){
+  const rec=day(habitDate), isToday=habitDate===todayStr();
+  const pretty=new Date(habitDate+"T00:00:00")
+    .toLocaleDateString("en-US",{month:"short",day:"numeric"});
+  return header("Habits")+
+  `<div class="daybar${isToday?"":" past"}">
+    <button data-hday="-1" aria-label="Previous day">&#8249;</button>
+    <div><b>${esc(dayLabel(habitDate))}</b><span>${esc(pretty)}</span></div>
+    <button data-hday="1" aria-label="Next day"${isToday?" disabled":""}>&#8250;</button>
+  </div>
+  <section class="card"><h2>Daily habits <button data-act="add-habit">+ New</button></h2>
+    ${S.habits.length?S.habits.map(h=>habitRow(h,rec)).join("")
+      :`<div class="empty">No habits yet. Add one to start a streak.</div>`}
+  </section>
+  <section class="card"><h2>Last 7 days</h2>${weekHabitStrip()}</section>`;
+}
+function habitRow(h,rec){
+  const st=streak(h.id), val=(rec.habits&&rec.habits[h.id])||0, done=isHabitDone(h,rec);
+  const ctrl = h.type==="count"
+    ? `<div class="counter">
+        <button data-hminus="${esc(h.id)}" aria-label="One less">−</button>
+        <span class="cval">${val}<small>/${h.target}</small></span>
+        <button data-hplus="${esc(h.id)}" aria-label="One more">+</button></div>`
+    : `<button class="check${done?" on":""}" data-hcheck="${esc(h.id)}"
+        role="switch" aria-checked="${done}" aria-label="${esc(h.name)}">✓</button>`;
+  return `<div class="habit">
+    <div class="h-em">${esc(h.e)}</div>
+    <div class="h-body"><div class="h-name">${esc(h.name)}</div>
+      <div class="h-streak${st>0?" live":""}">
+        <span>${st>0?`${st} day${st>1?"s":""} in a row`:"Start today"}</span>
+        <button data-hedit="${esc(h.id)}">Edit</button></div></div>
+    ${ctrl}
+  </div>`;
+}
+/* ---------- the week rail ----------
+   The You tab opens on the last 7 days; the rest of the history is one tap
+   away and nothing else about the chart changes. */
+const RANGES=[{k:7,l:"7 days"},{k:30,l:"30 days"},{k:90,l:"3 months"},{k:365,l:"A year"}];
+let calRange=7;
+function lastN(n){
+  const now=Date.now(), out=[];
+  for(let i=n-1;i>=0;i--){
+    const d=new Date(now-i*86400000), ds=d.toLocaleDateString("en-CA");
+    out.push({ds, today:ds===todayStr(), letter:d.toLocaleDateString("en-US",{weekday:"narrow"})});
+  }
+  return out;
+}
+// cols: [{d,today,over,title,segs:[{h,tone}]}], segs stacked from the bottom up.
+// The gap closes as columns multiply, so a year does not turn into all gutter.
+function weekChart(cols,goalPct){
+  const gap=cols.length>24?2:cols.length>12?4:7;
+  return `<div class="wkchart">
+    <div class="wkplot" style="gap:${gap}px">
+      ${goalPct!=null?`<div class="wkgoal" style="bottom:${goalPct}%"><b>GOAL</b></div>`:""}
+      ${cols.map(c=>`<div class="wkcol"><div class="wkbar" title="${esc(c.title)}">${
+        c.segs.map(s=>`<i style="height:${s.h}%;background:${s.tone}"></i>`).join("")
+      }</div></div>`).join("")}
+    </div>
+    <div class="wklabels" style="gap:${gap}px">${cols.map(c=>
+      `<span class="${c.today?"is-today":c.over?"is-over":""}">${esc(c.d)}</span>`).join("")}</div>
+  </div>`;
+}
+/* Breakfast at the foot of the column, dinner at the top: each day stacks up
+   the way it was eaten, and the goal line cuts across the whole range at once.
+   Past five weeks one column is one week, averaged per day -- 300 hairlines
+   say less than 40 columns do, and the goal line stays a daily goal. */
+function calStrip(n){
+  const goal=S.profile.calGoal, days=lastN(n), step=n>35?7:1;
+  const cols=[];
+  for(let i=0;i<days.length;i+=step){
+    const grp=days.slice(i,i+step);
+    const items=grp.reduce((a,x)=>a.concat((S.days[x.ds]||{}).meals||[]),[]);
+    cols.push({grp, cal:sumMeals(items).cal/grp.length,
+      segs:MEALS.map(m=>({tone:m.tone,
+        v:items.filter(y=>y.meal===m.k).reduce((a,b)=>a+(b.cal||0),0)/grp.length}))});
+  }
+  const max=Math.max(goal*1.12,...cols.map(c=>c.cal),1);
+  // Labels thin out rather than overlap: weekdays for a fortnight, then dates.
+  const label=(c,i)=>{
+    const ds=c.grp[0].ds;
+    if(step>1) return i%2?"":(+ds.slice(8))+"/"+(+ds.slice(5,7));
+    if(cols.length<=14) return c.grp[0].letter;
+    return i%Math.ceil(cols.length/6)?"":ds.slice(8);
+  };
+  return weekChart(cols.map((c,i)=>({
+    d:label(c,i), today:c.grp.some(x=>x.today), over:c.cal>goal,
+    title:`${round(c.cal)} kcal${step>1?" a day":""}`,
+    segs:c.segs.filter(s=>s.v>0).map(s=>({h:s.v/max*100,tone:s.tone}))
+  })),goal/max*100);
+}
+// Averages count only the days actually logged, so a week off does not read
+// as a week of fasting.
+function calStats(n){
+  const goal=S.profile.calGoal;
+  let logged=0,onTarget=0,cal=0,prot=0,water=0,wDays=0;
+  lastN(n).forEach(x=>{
+    const rec=S.days[x.ds]; if(!rec) return;
+    const meals=rec.meals||[];
+    if(meals.length){
+      const t=sumMeals(meals);
+      logged++; cal+=t.cal; prot+=t.p; if(t.cal<=goal) onTarget++;
+    }
+    if(rec.water){ water+=rec.water; wDays++; }
+  });
+  return {logged, onTarget,
+    avgCal:logged?round(cal/logged):0, avgP:logged?round(prot/logged):0,
+    avgWater:wDays?(water/wDays/1000).toFixed(1):"0.0"};
+}
+
+/* One habit keeps one lane all week, so a gap reads as "I always skip this one"
+   rather than just "four of five". Lanes run in the order of the list above. */
+function weekHabitStrip(){
+  const hs=S.habits, n=hs.length||1;
+  const cols=lastN(7).map(x=>{
+    const rec=S.days[x.ds], done=hs.filter(h=>isHabitDone(h,rec)).length;
+    // reversed: the column stacks from the bottom, so habit one lands on top
+    // and the lanes read down the column in the same order as the list
+    return {d:x.letter, today:x.today, title:`${done} of ${hs.length} done`,
+      segs:hs.map(h=>({h:100/n, tone:isHabitDone(h,rec)?"var(--m-fib)":"transparent"})).reverse()};
+  });
+  return weekChart(cols)+
+    `<p class="wknote">One lane per habit, in the order above. Green means done.</p>`;
+}
+
+/* ---------- FOODS ---------- */
+let foodQuery="", foodCat="All";
+/* Chip order is eating order, not the order the list happens to be written in.
+   Everyday Indian food first, then the rest of the plate, then what turns up
+   occasionally. Anything unlisted falls in at the end. */
+const CAT_ORDER=["Dal & Legumes","Vegetables","Breads","Rice & Grains",
+  "South Indian","Snacks","Chaat & Street","Non-Veg","Kebabs & Tandoor","Eggs",
+  "Dairy & Basics","Yogurt & Bowls","Oats & Porridge","Salads & Sides",
+  "Sandwiches & Wraps","Fruits","Avocado","Nuts & Seeds","Sweets","Beverages",
+  "Cafe & Bakery","Chinese & Asian","Fast Food & World","Pasta & Italian",
+  "Western Breakfast","Soups","Protein & Fitness","My Foods"];
+const catRank=c=>{ const i=CAT_ORDER.indexOf(c); return i<0?CAT_ORDER.length:i; };
+function viewFoods(){
+  const cats=["All",...new Set(allFoods().map(f=>f.cat))].sort((a,b)=>
+    a==="All"?-1:b==="All"?1:catRank(a)-catRank(b));
+  return header("Foods")+
+  `<div class="search"><span class="ic">\u{1F50D}</span>
+    <input id="foodSearch" type="search" autocomplete="off" autocorrect="off"
+      placeholder="Search ${allFoods().length} foods" value="${esc(foodQuery)}"></div>
+  <div class="cats">${cats.map(c=>
+    `<button class="cat${c===foodCat?" on":""}" data-cat="${esc(c)}">${esc(c)}</button>`).join("")}</div>
+  <section class="card" id="foodResults">${foodResults()}</section>`;
+}
+/* A word typed the other way round, spelled the other way, or in the other
+   language should still land. Each entry maps a word people type to a word the
+   list actually uses; a match on either counts, so "cauliflower" finds both
+   Cauliflower and Aloo Gobi. */
+const ALIAS={
+  avacado:"avocado", avacardo:"avocado", avakado:"avocado", abocado:"avocado",
+  avocardo:"avocado", butterfruit:"avocado",
+  brinjal:"baingan", eggplant:"baingan", aubergine:"baingan", baingan:"brinjal",
+  okra:"bhindi", ladyfinger:"bhindi", ladiesfinger:"bhindi",
+  cauliflower:"gobi", gobhi:"gobi", peas:"matar", matar:"peas",
+  potato:"aloo", aloo:"potato", alu:"aloo", allo:"aloo", aalu:"aloo",
+  spinach:"palak", palak:"spinach", fenugreek:"methi",
+  cottage:"paneer", curd:"dahi", dahi:"curd", yoghurt:"yogurt", yogurt:"curd",
+  chapati:"roti", chappati:"roti", chapathi:"roti", roti:"chapati",
+  rice:"chawal", chawal:"rice", lentil:"dal", lentils:"dal", daal:"dal",
+  chickpea:"chana", chickpeas:"chana", chana:"chickpea", kabuli:"chana",
+  kidneybean:"rajma", rajma:"kidney", bottlegourd:"lauki", lauki:"ghiya",
+  ghiya:"lauki", bittergourd:"karela", ridgegourd:"turai", pumpkin:"kaddu",
+  jackfruit:"kathal", colocasia:"arbi", yam:"suran", capsicum:"shimla",
+  bellpepper:"capsicum", prawn:"shrimp", shrimp:"prawn", mutton:"lamb",
+  lamb:"mutton", soybean:"soya", soyabean:"soya", cornflour:"corn",
+  buttermilk:"chaas", chaas:"buttermilk", cheela:"chilla", chilla:"cheela",
+  sabzi:"curry", sabji:"sabzi", subzi:"sabzi", veggie:"veg",
+  sandwhich:"sandwich", sandwitch:"sandwich", chiken:"chicken"
+};
+// Doubled letters are the commonest slip -- alloo, boilled, brocoli. Squeezing
+// every run down to one letter fixes the whole class without a list.
+const squeeze=s=>s.replace(/(.)\1+/g,"$1");
+/* Every word has to appear somewhere, in any order, across the name, the
+   category and the serving. "matar aloo" finds Aloo Matar; "paneer bowl"
+   finds the paneer dishes served in one. */
+function hits(f,q){
+  const words=String(q).trim().toLowerCase().split(/\s+/).filter(Boolean);
+  if(!words.length) return true;
+  const hay=(f.n+" "+f.cat+" "+(f.s||"")).toLowerCase(), flat=squeeze(hay);
+  return words.every(w=>hay.includes(w)||flat.includes(squeeze(w))
+    ||(ALIAS[w]&&hay.includes(ALIAS[w])));
+}
+function matches(f){
+  return (foodCat==="All"||f.cat===foodCat) && hits(f,foodQuery);
+}
+/* Most people eat the same twenty dishes. Recent puts them at the top of the
+   list and the top of the picker, so the usual breakfast is one tap rather
+   than a search through seven hundred. Newest first, one entry per dish. */
+function recentFoods(limit){
+  const ix=foodIndex(), out=[], seen=new Set();
+  const days=Object.keys(S.days).sort().reverse();
+  for(const ds of days){
+    const meals=(S.days[ds].meals||[]);
+    for(let i=meals.length-1;i>=0;i--){
+      const key=(meals[i].name||"").toLowerCase();
+      if(!key||seen.has(key)) continue;
+      seen.add(key);
+      const f=ix.byName.get(key);
+      if(f!==undefined) out.push(f);
+      if(out.length>=limit) return {ix,list:out};
+    }
+  }
+  return {ix,list:out};
+}
+// One pass over the list per render instead of an indexOf per row: with 700
+// foods the old way was a quarter of a million comparisons on every keystroke.
+function foodIndex(){
+  const all=allFoods(), of=new Map(), byName=new Map();
+  all.forEach((f,i)=>{ of.set(f,i); if(!byName.has(f.n.toLowerCase())) byName.set(f.n.toLowerCase(),i); });
+  return {all, of, byName};
+}
+const CAP=120;   // rows drawn at once; the rest wait behind a narrower search
+function foodResults(){
+  const {all,of}=foodIndex();
+  const recent=foodQuery||foodCat!=="All" ? [] : recentFoods(8).list;
+  const list=all.filter(matches);
+  const groups={};
+  list.slice(0,CAP).forEach(f=>{ (groups[f.cat]=groups[f.cat]||[]).push(f); });
+  const cats=Object.keys(groups).sort((a,b)=>catRank(a)-catRank(b));
+  const head=recent.length
+    ? `<div class="cat-h">Recent</div>${recent.map(i=>foodRow(all[i],i)).join("")}` : "";
+  const body=list.length
+    ? head+cats.map(cat=>
+        `<div class="cat-h">${esc(cat)}</div>${groups[cat].map(f=>foodRow(f,of.get(f))).join("")}`).join("")
+      +(list.length>CAP?`<div class="empty">${list.length-CAP} more — search to narrow it down</div>`:"")
+    : `<div class="empty">Nothing matches "${esc(foodQuery)}". Add it as a custom food below.</div>`;
+  return body+`<button class="addfood-link" data-act="add-food">+ Add a custom food</button>`;
+}
+function foodRow(f,i){
+  return `<button class="pick" data-food="${i}">
+    <span class="p-em">${esc(f.e||"\u{1F37D}️")}</span>
+    <span class="p-b"><span class="p-n">${esc(f.n)}</span>
+      <span class="p-s">${esc(f.s)} · P${round(f.p)} C${round(f.c)} F${round(f.f)}</span></span>
+    <span class="p-cal">${round(f.cal)}</span><span class="p-add">+</span></button>`;
+}
+
+/* ---------- YOU ---------- */
+function viewYou(){
+  const p=S.profile, st=calStats(calRange), weekly=calRange>35;
+  return header("You")+
+  `<section class="card"><h2>Calories</h2>
+    <div class="cats">${RANGES.map(r=>
+      `<button class="cat${r.k===calRange?" on":""}" data-range="${r.k}">${esc(r.l)}</button>`).join("")}</div>
+    ${calStrip(calRange)}
+    <div class="rail-key" style="margin-top:12px">${MEALS.map(m=>
+      `<span><i class="sw" style="background:${m.tone}"></i>${esc(m.l)}</span>`).join("")}</div>
+    <div class="nutri-prev" style="margin-top:14px">
+      <div><div class="v num">${st.avgCal}</div><div class="k">avg kcal</div></div>
+      <div><div class="v num">${st.avgP}</div><div class="k">avg protein</div></div>
+      <div><div class="v num">${st.logged}</div><div class="k">days logged</div></div>
+      <div><div class="v num">${st.onTarget}</div><div class="k">on target</div></div>
+      <div><div class="v num">${st.avgWater}<small style="font-size:11px">L</small></div><div class="k">avg water</div></div>
+    </div>
+    <p class="wknote">${weekly?"One column is one week, averaged per day. ":""}The dashed line is your
+      goal, ${round(p.calGoal)} kcal — anything above it went over. Averages count only the days you logged.</p>
+  </section>
+
+  <section class="card"><h2>Your profile</h2>
+    <div class="field"><label for="g-name">Your name</label>
+      <div class="inrow"><input id="g-name" type="text" autocomplete="name"
+        placeholder="What should we call you?" value="${esc(p.name||"")}"></div></div>
+    <div class="field"><label for="g-cal">Calorie target</label>
+      <div class="inrow"><input id="g-cal" type="number" inputmode="numeric" value="${p.calGoal}"><span class="unit">kcal</span></div></div>
+    <div class="grid2">
+      <div class="field"><label for="g-p">Protein</label><div class="inrow"><input id="g-p" type="number" inputmode="numeric" value="${p.p}"><span class="unit">g</span></div></div>
+      <div class="field"><label for="g-c">Carbs</label><div class="inrow"><input id="g-c" type="number" inputmode="numeric" value="${p.c}"><span class="unit">g</span></div></div>
+      <div class="field"><label for="g-f">Fat</label><div class="inrow"><input id="g-f" type="number" inputmode="numeric" value="${p.f}"><span class="unit">g</span></div></div>
+      <div class="field"><label for="g-fib">Fibre</label><div class="inrow"><input id="g-fib" type="number" inputmode="numeric" value="${p.fib}"><span class="unit">g</span></div></div>
+      <div class="field"><label for="g-water">Water goal</label><div class="inrow"><input id="g-water" type="number" inputmode="numeric" value="${p.waterGoal}"><span class="unit">ml</span></div></div>
+      <div class="field"><label for="g-glass">Glass size</label><div class="inrow"><input id="g-glass" type="number" inputmode="numeric" value="${p.glass}"><span class="unit">ml</span></div></div>
+    </div>
+    <div class="stack">
+      <button class="btn" data-act="save-goals">Save profile</button>
+      <button class="btn ghost" data-act="target">Suggest my target</button>
+      <button class="btn ghost" data-act="automacro">Fill macros from calories</button>
+    </div>
+  </section>
+
+  <section class="card"><h2>Your data</h2>
+    <div class="stack">
+      <button class="btn ghost" data-act="export">Copy a backup</button>
+      <button class="btn ghost" data-act="import">Restore from backup</button>
+      ${USER?`<button class="btn ghost signout" data-act="signout">Sign out</button>`:""}
+      <button class="btn danger" data-act="reset">Erase everything</button>
+    </div>
+    ${USER
+      ? `<div class="whoami">Signed in as ${esc(p.name?p.name+" · ":"")}${esc(USER.email||"")}<br>Your logs sync to your account.</div>`
+      : `<div style="text-align:center;font-size:12px;color:var(--ink-3);margin-top:12px">
+          Everything stays on this device.</div>`}
+  </section>`;
+}
+
+/* ============================ SHEET ============================ */
+const scrim=$("#scrim"), sheet=$("#sheet");
+function openSheet(title,html,tall){
+  $("#sh-title").textContent=title;
+  $("#sh-body").innerHTML=html;
+  sheet.classList.toggle("tall",!!tall);
+  scrim.classList.add("on"); sheet.classList.add("on");
+}
+function closeSheet(){ scrim.classList.remove("on"); sheet.classList.remove("on"); pending=null; }
+scrim.onclick=closeSheet; $("#sh-x").onclick=closeSheet;
+document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&sheet.classList.contains("on")) closeSheet(); });
+
+/* -- pick a food -- */
+function openFoodPicker(meal){
+  openSheet("Add to "+mealOf(meal).l,
+    `<div class="search pin"><span class="ic">\u{1F50D}</span>
+      <input id="pickSearch" type="search" autocomplete="off" autocorrect="off" placeholder="Search foods"></div>
+     <div id="pickList"></div>`, true);
+  const inp=$("#pickSearch");
+  pickMeal=meal;
+  renderPickList("");
+  inp.oninput=()=>renderPickList(inp.value);
+}
+let pickMeal="snack";
+function renderPickList(q){
+  q=q.trim().toLowerCase();
+  const {all,of}=foodIndex();
+  const recent=q?[]:recentFoods(8).list;
+  const list=all.filter(f=>hits(f,q)).slice(0,80);
+  const head=recent.length
+    ? `<div class="cat-h">Recent</div>${recent.map(i=>foodRow(all[i],i)).join("")}
+       <div class="cat-h">All foods</div>` : "";
+  $("#pickList").innerHTML=(list.length?head+list.map(f=>foodRow(f,of.get(f))).join("")
+    :`<div class="empty">No match for "${esc(q)}"</div>`)
+    +`<button class="addfood-link" data-act="add-food">+ Add a custom food</button>`;
+}
+
+/* -- quantity + meal -- */
+let pending=null; // {food, meal, mult, from}
+function openQty(food,meal,from){
+  pending={food,meal:meal||"snack",mult:1,from:from||null};
+  const f=food;
+  openSheet(f.n,
+    `${pending.from?`<button class="meal-add" data-act="back" style="padding:0 0 8px">‹ Back to list</button>`:""}
+    <div class="qty-food"><span class="qf-em">${esc(f.e||"\u{1F37D}️")}</span>
+      <div><div class="qf-n">${esc(f.n)}</div><div class="qf-s">${esc(f.s)}</div></div></div>
+    <span class="flabel">How much</span>
+    <div class="seg" id="qseg">${[0.5,1,1.5,2,3].map(x=>
+      `<button data-mult="${x}"${x===1?' class="on"':""}>${x}×</button>`).join("")}</div>
+    <div class="field"><label for="qexact">Or exact servings</label>
+      <div class="inrow"><input id="qexact" type="number" step="0.25" min="0" inputmode="decimal" value="1">
+      <span class="unit">× ${esc(f.s)}</span></div></div>
+    <span class="flabel">Which meal</span>
+    <div class="meal-pick" id="mpick">${MEALS.map(mm=>
+      `<button data-mp="${mm.k}"${mm.k===pending.meal?' class="on"':""}>
+        <span class="em">${mm.e}</span>${esc(mm.l)}</button>`).join("")}</div>
+    <div class="nutri-prev">
+      <div><div class="v num" id="np-cal">${round(f.cal)}</div><div class="k">kcal</div></div>
+      <div><div class="v num" id="np-p" style="color:var(--m-p)">${round(f.p)}</div><div class="k">Prot</div></div>
+      <div><div class="v num" id="np-c" style="color:var(--m-c)">${round(f.c)}</div><div class="k">Carb</div></div>
+      <div><div class="v num" id="np-f" style="color:var(--m-f)">${round(f.f)}</div><div class="k">Fat</div></div>
+      <div><div class="v num" id="np-fib" style="color:var(--m-fib)">${round(f.fib)}</div><div class="k">Fibre</div></div>
+    </div>
+    <button class="btn" id="qbtn" data-act="confirm-log">Add to ${esc(mealOf(pending.meal).l)}</button>`);
+  $("#qexact").oninput=e=>{
+    const v=parseFloat(e.target.value);
+    if(isFinite(v)&&v>0){ pending.mult=v; syncQty(true); }
+  };
+  syncQty();
+}
+// Patch only what changed - re-rendering the sheet loses scroll position and
+// bounces the iOS keyboard.
+function syncQty(skipInput){
+  if(!pending) return;
+  const f=pending.food, m=pending.mult;
+  $$("#qseg button").forEach(b=>b.classList.toggle("on",parseFloat(b.dataset.mult)===m));
+  $$("#mpick button").forEach(b=>b.classList.toggle("on",b.dataset.mp===pending.meal));
+  [["cal","cal"],["p","p"],["c","c"],["f","f"],["fib","fib"]].forEach(([id,k])=>{
+    const el=$("#np-"+id); if(el) el.textContent=round(f[k]*m);
+  });
+  $("#qbtn").textContent=`Add ${round(f.cal*m)} kcal to ${mealOf(pending.meal).l}`;
+  const ex=$("#qexact");
+  if(!skipInput&&ex&&parseFloat(ex.value)!==m) ex.value=m;
+}
+function commitLog(){
+  if(!pending) return;
+  const f=pending.food, m=pending.mult;
+  const item={
+    id:"m"+Date.now()+Math.random().toString(36).slice(2,6),
+    name:f.n, e:f.e||"\u{1F37D}️", meal:pending.meal,
+    cal:f.cal*m, p:f.p*m, c:f.c*m, f:f.f*m, fib:f.fib*m,
+    qtyLabel:(m===1?f.s:`${m}× ${f.s}`)
+  };
+  day().meals.push(item);
+  const label=mealOf(pending.meal).l, kcal=round(f.cal*m);
+  save({meal:item}); closeSheet();
+  if(TAB!=="today"){ TAB="today"; }
+  render();
+  toast(`Added ${kcal} kcal to ${label}`);
+}
+
+/* -- custom food -- */
+function openAddFood(){
+  openSheet("Add a custom food",
+    `<div class="field"><label for="cf-n">Name</label><div class="inrow"><input id="cf-n" placeholder="Mom's dal"></div></div>
+    <div class="field"><label for="cf-s">One serving is</label><div class="inrow"><input id="cf-s" placeholder="1 bowl (200g)"></div></div>
+    <div class="grid2">
+      <div class="field"><label for="cf-cal">Calories</label><div class="inrow"><input id="cf-cal" type="number" inputmode="numeric"><span class="unit">kcal</span></div></div>
+      <div class="field"><label for="cf-p">Protein</label><div class="inrow"><input id="cf-p" type="number" inputmode="decimal"><span class="unit">g</span></div></div>
+      <div class="field"><label for="cf-c">Carbs</label><div class="inrow"><input id="cf-c" type="number" inputmode="decimal"><span class="unit">g</span></div></div>
+      <div class="field"><label for="cf-f">Fat</label><div class="inrow"><input id="cf-f" type="number" inputmode="decimal"><span class="unit">g</span></div></div>
+      <div class="field"><label for="cf-fib">Fibre</label><div class="inrow"><input id="cf-fib" type="number" inputmode="decimal"><span class="unit">g</span></div></div>
+      <div class="field"><label for="cf-e">Emoji</label><div class="inrow"><input id="cf-e" placeholder="\u{1F37D}️" maxlength="4"></div></div>
+    </div>
+    <button class="btn" data-act="save-food">Save food</button>`);
+}
+function saveCustomFood(){
+  const val=id=>($("#"+id).value||"").trim();
+  const n=val("cf-n");
+  if(!n){ toast("Give the food a name"); $("#cf-n").focus(); return; }
+  const num=id=>Math.max(0,parseFloat($("#"+id).value)||0);
+  const food={id:"f"+Date.now()+Math.random().toString(36).slice(2,6),
+    n,e:val("cf-e")||"\u{1F37D}️",s:val("cf-s")||"1 serving",
+    cal:num("cf-cal"),p:num("cf-p"),c:num("cf-c"),f:num("cf-f"),fib:num("cf-fib"),
+    cat:"My Foods",custom:true};
+  S.customFoods.unshift(food); save({food}); closeSheet();
+  if(TAB==="foods") render();
+  setTimeout(()=>openQty(food,"snack"),320);
+}
+
+/* -- habits -- */
+function openAddHabit(existing){
+  const h=existing||{name:"",e:"⭐",type:"check",target:1};
+  openSheet(existing?"Edit habit":"New habit",
+    `<div class="field"><label for="hb-n">Name</label><div class="inrow"><input id="hb-n" value="${esc(h.name)}" placeholder="Read 20 minutes"></div></div>
+    <div class="field"><label for="hb-e">Emoji</label><div class="inrow"><input id="hb-e" value="${esc(h.e)}" maxlength="4"></div></div>
+    <span class="flabel">How you track it</span>
+    <div class="seg" id="hb-type">
+      <button data-t="check"${h.type==="check"?' class="on"':""}>Done or not</button>
+      <button data-t="count"${h.type==="count"?' class="on"':""}>Count times</button>
+    </div>
+    <div class="field" id="hb-target-wrap" style="display:${h.type==="count"?"block":"none"}">
+      <label for="hb-target">Times per day</label>
+      <div class="inrow"><input id="hb-target" type="number" inputmode="numeric" value="${h.target||1}"><span class="unit">a day</span></div></div>
+    <div class="stack">
+      <button class="btn" data-act="save-habit" data-edit="${existing?esc(existing.id):""}">${existing?"Save changes":"Add habit"}</button>
+      ${existing?`<button class="btn danger" data-act="del-habit" data-id="${esc(existing.id)}">Delete habit</button>`:""}
+    </div>`);
+  const body=$("#sh-body");
+  body.dataset.htype=h.type;
+  $("#hb-type").onclick=e=>{
+    const b=e.target.closest("[data-t]"); if(!b) return;
+    body.dataset.htype=b.dataset.t;
+    $$("#hb-type button").forEach(x=>x.classList.toggle("on",x===b));
+    $("#hb-target-wrap").style.display=b.dataset.t==="count"?"block":"none";
+  };
+}
+function saveHabit(editId){
+  const n=($("#hb-n").value||"").trim();
+  if(!n){ toast("Name the habit first"); $("#hb-n").focus(); return; }
+  const type=$("#sh-body").dataset.htype||"check";
+  const e=($("#hb-e").value||"").trim()||"⭐";
+  const target=Math.max(1,parseInt($("#hb-target")&&$("#hb-target").value)||1);
+  let h;
+  if(editId){ h=S.habits.find(x=>x.id===editId); if(h) Object.assign(h,{name:n,e,type,target}); }
+  else { h={id:"h"+Date.now(),name:n,e,type,target}; S.habits.push(h); }
+  save(h?{habit:h}:null); closeSheet(); render(); toast(editId?"Habit updated":"Habit added");
+}
+
+/* ============================ FEEDBACK ============================ */
+function toast(msg){
+  const t=$("#toast"); t.textContent=msg; t.classList.add("on");
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("on"),1900);
+}
+function celebrate(x,y){
+  if(matchMedia("(prefers-reduced-motion:reduce)").matches) return;
+  const em=["\u{1F389}","\u{1F525}","⭐","✨","\u{1F44F}"];
+  for(let i=0;i<7;i++){
+    const s=document.createElement("div");
+    s.className="burst"; s.textContent=em[i%em.length];
+    s.style.left=x+"px"; s.style.top=y+"px";
+    s.style.setProperty("--dx",(Math.random()*150-75)+"px");
+    s.style.setProperty("--dy",(-55-Math.random()*85)+"px");
+    document.body.appendChild(s); setTimeout(()=>s.remove(),1000);
+  }
+}
+function bind(){
+  const inp=$("#foodSearch");
+  if(inp) inp.oninput=()=>{ foodQuery=inp.value; $("#foodResults").innerHTML=foodResults(); };
+}
+
+/* ============================ EVENTS ============================ */
+document.addEventListener("click",e=>{
+  const el=sel=>e.target.closest(sel);
+  let n;
+  if((n=el("#nav button"))){ TAB=n.dataset.tab; foodQuery=""; foodCat="All";
+    habitDate=todayStr(); render(); $("#view").scrollTop=0; return; }
+  if(el('[data-act="theme"]')){ toggleTheme(); return; }
+
+  if((n=el("[data-water]"))){
+    const t=day(), before=t.water;
+    t.water=Math.max(0,t.water+parseInt(n.dataset.water,10)); save({day:todayStr()}); render();
+    if(before<S.profile.waterGoal&&t.water>=S.profile.waterGoal){
+      const r=n.getBoundingClientRect(); celebrate(r.left+r.width/2,r.top);
+    } return; }
+  if(el('[data-act="water-goal"]')){ openWaterGoal(); return; }
+
+  if((n=el("[data-add]"))){ openFoodPicker(n.dataset.add); return; }
+  if((n=el("[data-del]"))){
+    const t=day(); t.meals=t.meals.filter(m=>m.id!==n.dataset.del); save({unmeal:n.dataset.del}); render(); return; }
+  if((n=el("[data-cat]"))){ foodCat=n.dataset.cat; render(); return; }
+  if((n=el("[data-range]"))){ calRange=+n.dataset.range; render(); return; }
+  if((n=el("[data-food]"))){
+    const f=allFoods()[+n.dataset.food];
+    const inPicker=!!e.target.closest("#pickList");
+    if(f) openQty(f,inPicker?pickMeal:"snack",inPicker?"picker":null);
+    return; }
+  if(el('[data-act="back"]')){ openFoodPicker(pickMeal); return; }
+  if((n=el("[data-mult]"))){ pending.mult=parseFloat(n.dataset.mult); syncQty(); return; }
+  if((n=el("[data-mp]"))){ pending.meal=n.dataset.mp; syncQty(); return; }
+  if(el('[data-act="confirm-log"]')){ commitLog(); return; }
+  if(el('[data-act="add-food"]')){ openAddFood(); return; }
+  if(el('[data-act="save-food"]')){ saveCustomFood(); return; }
+
+  // Every tick lands on the day the stepper is showing, not on today.
+  if((n=el("[data-hday]"))){
+    const d=new Date(habitDate+"T00:00:00");
+    d.setDate(d.getDate()+Number(n.dataset.hday));
+    const ds=d.toLocaleDateString("en-CA");
+    if(ds<=todayStr()) habitDate=ds;       // no ticking a day that has not happened
+    render(); return; }
+  if((n=el("[data-hcheck]"))){
+    const id=n.dataset.hcheck, t=day(habitDate), was=t.habits[id];
+    t.habits[id]=was?0:1; save({day:habitDate}); render();
+    if(!was){ const r=n.getBoundingClientRect(); celebrate(r.left+r.width/2,r.top); } return; }
+  if((n=el("[data-hplus]"))){
+    const id=n.dataset.hplus, t=day(habitDate), h=S.habits.find(x=>x.id===id);
+    const before=isHabitDone(h,t);
+    t.habits[id]=(t.habits[id]||0)+1; save({day:habitDate});
+    const now=isHabitDone(h,t); render();
+    if(!before&&now){ const r=n.getBoundingClientRect(); celebrate(r.left,r.top); } return; }
+  if((n=el("[data-hminus]"))){
+    const id=n.dataset.hminus, t=day(habitDate);
+    t.habits[id]=Math.max(0,(t.habits[id]||0)-1); save({day:habitDate}); render(); return; }
+  if((n=el("[data-hedit]"))){ const h=S.habits.find(x=>x.id===n.dataset.hedit); if(h) openAddHabit(h); return; }
+  if(el('[data-act="add-habit"]')){ openAddHabit(); return; }
+  if((n=el('[data-act="save-habit"]'))){ saveHabit(n.dataset.edit||null); return; }
+  if((n=el('[data-act="del-habit"]'))){
+    S.habits=S.habits.filter(h=>h.id!==n.dataset.id); save({unhabit:n.dataset.id}); closeSheet(); render(); toast("Habit removed"); return; }
+
+  // The target sheet's own choices: highlight the tapped one, redo the sum.
+  if((n=el("#t-job [data-job],#t-ex [data-ex],#t-sex [data-sex],#t-goal [data-goal]"))){
+    Array.from(n.parentNode.children).forEach(b=>b.classList.toggle("on",b===n));
+    refreshTarget(); return; }
+  if(el('[data-act="save-target"]')){ saveTarget(); return; }
+  if(el('[data-act="skip-target"]')){ skipTarget(); return; }
+  if(el('[data-act="target"]')){ openTarget(); return; }
+  if(el('[data-act="save-goals"]')){ saveGoals(); return; }
+  if(el('[data-act="automacro"]')){ autoMacro(); return; }
+  if(el('[data-act="save-water-goal"]')){ saveWaterGoal(); return; }
+  if(el('[data-act="export"]')){ exportData(); return; }
+  if(el('[data-act="import"]')){ openImport(); return; }
+  if(el('[data-act="do-import"]')){ doImport(); return; }
+  if(el('[data-act="reset"]')){
+    const where = USER ? "in your account, on every device" : "on this device";
+    if(confirm("Erase every log, habit and goal "+where+"? This cannot be undone.")){
+      const wipeCloudToo=!!USER;
+      try{ localStorage.removeItem(cacheKey()); }catch(err){}
+      S=loadState();
+      if(wipeCloudToo) push({wipe:true});
+      render(); toast("Everything erased");
+    } return; }
+  if(el('[data-act="signout"]')){ signOut(); return; }
+});
+
+/* ============================ SETTINGS ============================ */
+/* ---------- suggesting a calorie target ----------
+   Mifflin-St Jeor for the resting burn, then two separate multipliers for what
+   the day is actually made of. One "activity" dropdown makes a desk worker who
+   trains five days a week choose which half of their life to lie about, so the
+   job and the exercise are asked for separately and added. */
+const JOBS=[
+  {k:"sitting", l:"Sitting", s:"Desk, driving, studying", v:0},
+  {k:"feet",    l:"On your feet a fair bit", s:"Teaching, shop floor, housework", v:.10},
+  {k:"physical",l:"Physical work", s:"Labour, delivery, trades", v:.20}];
+const EXERCISE=[
+  {k:"rare", l:"Rarely",           v:0},
+  {k:"1-2",  l:"1–2 days a week",  v:.08},
+  {k:"3-4",  l:"3–4 days a week",  v:.16},
+  {k:"5-6",  l:"5–6 days a week",  v:.24},
+  {k:"daily",l:"Every day",        v:.32}];
+const GOALS=[
+  {k:"lose",     l:"Lose weight",  s:"about 0.5 kg a week", v:-500},
+  {k:"maintain", l:"Stay the same", s:"hold your weight",   v:0},
+  {k:"gain",     l:"Gain muscle",  s:"a slow build",        v:300}];
+const pickOf=(arr,k)=>arr.find(x=>x.k===k)||arr[0];
+
+function bmr(p){
+  // Mifflin-St Jeor. Sex shifts the constant by 166 kcal, which is why it is asked.
+  const base=10*p.weight+6.25*p.height-5*p.age;
+  return p.sex==="f" ? base-161 : base+5;
+}
+function suggestTarget(p){
+  const rest=bmr(p);
+  const factor=1.2+pickOf(JOBS,p.job).v+pickOf(EXERCISE,p.exercise).v;
+  const maintain=rest*factor;
+  const target=maintain+pickOf(GOALS,p.goal).v;
+  // A floor, whatever the arithmetic says. Below this it stops being a diet.
+  const floor=p.sex==="f"?1200:1500;
+  return {rest:round(rest), factor:+factor.toFixed(2),
+    maintain:round(maintain), target:Math.max(floor,round(target)),
+    floored:round(target)<floor};
+}
+function targetForm(){
+  const p=S.profile;
+  return `<p class="hint">Seven answers, once. We work out roughly what you burn
+    in a day and suggest a calorie target — you can change it afterwards.</p>
+  <div class="grid2">
+    <div class="field"><label for="t-age">Age</label>
+      <div class="inrow"><input id="t-age" type="number" inputmode="numeric" value="${p.age||""}" placeholder="28"><span class="unit">yrs</span></div></div>
+    <div class="field"><label>Sex</label>
+      <div class="seg" id="t-sex">
+        <button type="button" data-sex="m" class="${p.sex==="f"?"":"on"}">Male</button>
+        <button type="button" data-sex="f" class="${p.sex==="f"?"on":""}">Female</button>
+      </div></div>
+  </div>
+  <div class="grid2">
+    <div class="field"><label for="t-ht">Height</label>
+      <div class="inrow"><input id="t-ht" type="number" inputmode="numeric" value="${p.height||""}" placeholder="175"><span class="unit">cm</span></div></div>
+    <div class="field"><label for="t-wt">Weight</label>
+      <div class="inrow"><input id="t-wt" type="number" inputmode="decimal" value="${p.weight||""}" placeholder="72"><span class="unit">kg</span></div></div>
+  </div>
+  <label class="flabel">Most of your day</label>
+  <div class="stack" id="t-job" style="margin-bottom:16px">${JOBS.map(j=>
+    `<button type="button" class="opt${(p.job||"sitting")===j.k?" on":""}" data-job="${j.k}">
+      <b>${esc(j.l)}</b><span>${esc(j.s)}</span></button>`).join("")}</div>
+  <label class="flabel">Exercise</label>
+  <div class="seg wrap" id="t-ex" style="margin-bottom:16px">${EXERCISE.map(e=>
+    `<button type="button" class="${(p.exercise||"rare")===e.k?"on":""}" data-ex="${e.k}">${esc(e.l)}</button>`).join("")}</div>
+  <label class="flabel">What are you after</label>
+  <div class="stack" id="t-goal" style="margin-bottom:16px">${GOALS.map(g=>
+    `<button type="button" class="opt${(p.goal||"maintain")===g.k?" on":""}" data-goal="${g.k}">
+      <b>${esc(g.l)}</b><span>${esc(g.s)}</span></button>`).join("")}</div>
+  <div class="suggest" id="t-out"></div>
+  <div class="stack">
+    <button class="btn" data-act="save-target">Use this target</button>
+    <button class="btn ghost" data-act="skip-target">Not now</button>
+  </div>`;
+}
+// Reads the sheet, not the profile: the number moves as you change an answer.
+function targetDraft(){
+  const g=id=>Math.max(0,parseFloat($("#"+id).value)||0);
+  const on=(sel,attr)=>{ const b=$(sel+" .on"); return b?b.dataset[attr]:""; };
+  return {age:g("t-age"), height:g("t-ht"), weight:g("t-wt"),
+    sex:on("#t-sex","sex")||"m", job:on("#t-job","job")||"sitting",
+    exercise:on("#t-ex","ex")||"rare", goal:on("#t-goal","goal")||"maintain"};
+}
+function refreshTarget(){
+  const d=targetDraft(), out=$("#t-out");
+  if(!out) return;
+  if(!d.age||!d.height||!d.weight){
+    out.className="suggest waiting";
+    out.innerHTML=`<span>Fill in age, height and weight to see a suggestion.</span>`;
+    return;
+  }
+  const r=suggestTarget(d);
+  out.className="suggest";
+  out.innerHTML=`<div class="num big">${r.target}</div><div class="lbl">kcal a day</div>
+    <p>You burn about <b>${r.maintain}</b> a day — ${r.rest} at rest, ×${r.factor} for how you
+    live. ${r.goal==="maintain"?"":""}${
+      pickOf(GOALS,d.goal).k==="lose"?`Eating ${r.target} takes off ${pickOf(GOALS,"lose").s}.`
+      :pickOf(GOALS,d.goal).k==="gain"?"The extra 300 is what builds."
+      :"That is what holds you steady."}${
+      r.floored?" We stopped at the lowest we will suggest — eating less than this is not something to do without a doctor.":""}</p>`;
+}
+function openTarget(){
+  openSheet("Set your target",targetForm(),true);
+  refreshTarget();
+  $("#sh-body").addEventListener("input",refreshTarget);
+}
+function saveTarget(){
+  const d=targetDraft();
+  if(!d.age||!d.height||!d.weight){ toast("Age, height and weight first"); return; }
+  const r=suggestTarget(d), p=S.profile;
+  Object.assign(p,d,{calGoal:r.target});
+  // Same split the "Fill macros from calories" button uses.
+  p.p=round(r.target*0.30/4); p.c=round(r.target*0.45/4);
+  p.f=round(r.target*0.25/9); p.fib=round(r.target/1000*14);
+  save({profile:true}); closeSheet(); render();
+  toast("Target set — "+r.target+" kcal a day");
+}
+// Skipping still records the age, so the sheet does not ambush you every launch.
+function skipTarget(){
+  S.profile.age=S.profile.age||-1;
+  save({profile:true}); closeSheet();
+  toast("Keeping "+S.profile.calGoal+" kcal — change it any time in You");
+}
+
+function openWaterGoal(){
+  const p=S.profile;
+  openSheet("Water goal",
+    `<div class="field"><label for="wg">Daily goal</label><div class="inrow"><input id="wg" type="number" inputmode="numeric" value="${p.waterGoal}"><span class="unit">ml</span></div></div>
+    <div class="field"><label for="wgs">Your glass holds</label><div class="inrow"><input id="wgs" type="number" inputmode="numeric" value="${p.glass}"><span class="unit">ml</span></div></div>
+    <button class="btn" data-act="save-water-goal">Save</button>`);
+}
+function saveWaterGoal(){
+  S.profile.waterGoal=Math.max(200,parseInt($("#wg").value,10)||2500);
+  S.profile.glass=Math.max(50,parseInt($("#wgs").value,10)||250);
+  save({profile:true}); closeSheet(); render(); toast("Water goal saved");
+}
+function saveGoals(){
+  const g=(id,d)=>Math.max(0,parseInt($("#"+id).value,10)||d), p=S.profile;
+  p.name=$("#g-name").value.trim().slice(0,60);
+  p.calGoal=g("g-cal",2000); p.p=g("g-p",120); p.c=g("g-c",220);
+  p.f=g("g-f",60); p.fib=g("g-fib",30);
+  p.waterGoal=g("g-water",2500); p.glass=g("g-glass",250);
+  save({profile:true}); render(); toast("Profile saved");
+}
+function autoMacro(){
+  // 30% protein, 45% carbs, 25% fat (4/4/9 kcal per gram); ~14g fibre per 1000 kcal
+  const cal=Math.max(1,parseInt($("#g-cal").value,10)||S.profile.calGoal);
+  $("#g-p").value=round(cal*0.30/4);
+  $("#g-c").value=round(cal*0.45/4);
+  $("#g-f").value=round(cal*0.25/9);
+  $("#g-fib").value=round(cal/1000*14);
+  toast("Macros filled in — check them, then save");
+}
+
+/* ============================ BACKUP ============================ */
+function exportData(){
+  const blob=JSON.stringify(S);
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(blob).then(()=>toast("Backup copied to clipboard"),()=>showBackup(blob));
+  } else showBackup(blob);
+}
+function showBackup(blob){
+  openSheet("Your backup",
+    `<p class="hint">Copy all of this, then paste it into Restore on your other device.</p>
+    <textarea class="ta" readonly onclick="this.select()">${esc(blob)}</textarea>`);
+}
+function openImport(){
+  openSheet("Restore from backup",
+    `<p class="hint">Paste a backup below. This replaces what is on this device.</p>
+    <textarea class="ta" id="imp" placeholder="Paste backup here"></textarea>
+    <div style="height:12px"></div>
+    <button class="btn" data-act="do-import">Restore</button>`);
+}
+function doImport(){
+  const txt=($("#imp").value||"").trim();
+  if(!txt){ toast("Paste a backup first"); return; }
+  let obj;
+  try{ obj=JSON.parse(txt); }catch(err){ toast("That is not a readable backup"); return; }
+  if(!obj||typeof obj!=="object"||!obj.profile||!obj.days){ toast("That backup is missing data"); return; }
+  S=Object.assign(loadState(),obj);
+  S.days=S.days&&typeof S.days==="object"?S.days:{};
+  S.habits=Array.isArray(S.habits)?S.habits:DEFAULT_HABITS.map(h=>Object.assign({},h));
+  S.customFoods=Array.isArray(S.customFoods)?S.customFoods:[];
+  save({bulk:true}); closeSheet(); render(); toast("Backup restored");
+}
+
+/* ============================ THEME ============================ */
+function toggleTheme(){
+  const root=document.documentElement;
+  let cur=root.getAttribute("data-theme");
+  if(!cur) cur=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";
+  const next=cur==="dark"?"light":"dark";
+  root.setAttribute("data-theme",next);
+  const meta=document.querySelector('meta[name="theme-color"]:not([media])');
+  if(meta) meta.content=next==="dark"?"#0E1113":"#E9ECEE";
+  try{ localStorage.setItem("nourish.theme",next); }catch(e){}
+}
+(function initTheme(){
+  try{ const t=localStorage.getItem("nourish.theme"); if(t) document.documentElement.setAttribute("data-theme",t); }catch(e){}
+})();
+
+/* ============================ SELF-CHECK ============================ */
+function devCheck(){
+  const meals=[{cal:100,p:10,c:5,f:2,fib:1},{cal:250,p:5,c:30,f:8,fib:4}];
+  const t=sumMeals(meals);
+  console.assert(t.cal===350&&t.p===15&&t.c===35&&t.f===10&&t.fib===5,"sumMeals broken",t);
+  console.assert(sumMeals([]).cal===0,"sumMeals of empty day should be 0");
+  console.assert(sumMeals([{cal:50}]).p===0,"sumMeals must tolerate partial items");
+
+  console.assert(clamp(5,0,1)===1&&clamp(-1,0,1)===0,"clamp broken");
+  console.assert(pct(50,100)===50&&pct(200,100)===100&&pct(5,0)===0,"pct broken",pct(5,0));
+  console.assert(streak("does-not-exist")===0,"streak of unknown habit should be 0");
+  console.assert(esc('<img src=x onerror="a">')==="&lt;img src=x onerror=&quot;a&quot;&gt;","esc broken");
+
+  // rail: under goal keeps the goal tick at the right edge, over goal pulls it in
+  const under=rail([{meal:"lunch",cal:500,name:"x"}],2000);
+  console.assert(under.indexOf("width:25%")>-1,"rail should scale to goal when under");
+  console.assert(under.indexOf("left:calc(100% - 1px)")>-1,"goal tick sits at the end when under");
+  const over=rail([{meal:"lunch",cal:3000,name:"x"}],2000);
+  console.assert(over.indexOf("left:calc(66.66666666666666% - 1px)")>-1,"goal tick moves in when over",over);
+  console.assert(rail([],2000).indexOf("rail-empty")>-1,"empty day shows the empty rail");
+
+  // week rail: goal line placed from the bottom, no line when there is no goal
+  const wk=weekChart([{d:"M",title:"x",segs:[{h:50,tone:"red"}]}],40);
+  console.assert(wk.indexOf("bottom:40%")>-1,"week goal line missing",wk);
+  console.assert(weekChart([{d:"M",title:"x",segs:[]}]).indexOf("wkgoal")===-1,
+    "no goal line when no goal is passed");
+  console.assert(calStrip(7).split("wkcol").length===8,"week rail must draw 7 days");
+  console.assert(calStrip(70).split("wkcol").length===11,"long ranges must fold into weeks");
+
+  // search: word order must not matter, and every word must land
+  const am=FOODS.find(f=>f.n==="Aloo Matar");
+  console.assert(hits(am,"matar aloo")&&hits(am,"aloo matar")&&hits(am,"ALOO"),"search word order broken");
+  console.assert(!hits(am,"aloo gobi"),"search must require every word");
+  console.assert(hits(am,"  "),"blank search shows everything");
+  const av=FOODS.find(f=>f.n==="Avocado Toast");
+  console.assert(hits(av,"avacardo")&&hits(av,"avacado"),"misspellings must still land",av);
+  console.assert(FOODS.some(f=>hits(f,"brinjal"))&&FOODS.some(f=>hits(f,"okra")),
+    "regional names must resolve");
+  console.assert(hits(am,"matar alloo"),"doubled letters must still land");
+  const be=FOODS.find(f=>f.n==="Boiled Egg Sandwich");
+  console.assert(hits(be,"boilled egg sandwhich"),"typo run must still land",be);
+
+  // habits: the stepper walks back but never past today
+  const keep=habitDate;
+  habitDate=todayStr();
+  console.assert(viewHabits().indexOf('data-hday="1" aria-label="Next day" disabled')>-1,
+    "forward step must be dead on today");
+  console.assert(dayLabel(todayStr())==="Today","today must say Today");
+  habitDate=keep;
+
+  // foods list: capped, ordered, and every row carries a usable index
+  const {all,of}=foodIndex();
+  console.assert(of.get(all[5])===5,"food index must map back to its position");
+  const q0=foodQuery, c0=foodCat; foodQuery=""; foodCat="All";
+  const html=foodResults();
+  console.assert((html.match(/class="pick"/g)||[]).length<=CAP+8,
+    "unfiltered list must stay capped",(html.match(/class="pick"/g)||[]).length);
+  console.assert(html.indexOf('data-food="undefined"')===-1,"every row needs an index");
+  foodQuery=q0; foodCat=c0;
+  console.assert(catRank("Dal & Legumes")<catRank("Soups"),"chip order must be eating order");
+
+  // target: Mifflin-St Jeor against two worked examples, then the rails
+  const man={age:28,sex:"m",height:175,weight:72,job:"sitting",exercise:"3-4",goal:"maintain"};
+  console.assert(bmr(man)===1678.75,"BMR (male) wrong",bmr(man));
+  const woman=Object.assign({},man,{sex:"f"});
+  console.assert(bmr(woman)===1512.75,"BMR (female) wrong",bmr(woman));
+  console.assert(suggestTarget(man).factor===1.36,"desk job plus 3-4 days must be 1.36",
+    suggestTarget(man).factor);
+  console.assert(suggestTarget(Object.assign({},man,{job:"physical",exercise:"daily"})).factor===1.72,
+    "the top of the range must still be reachable");
+  console.assert(suggestTarget(Object.assign({},man,{goal:"lose"})).target
+    ===suggestTarget(man).target-500,"losing must take off 500");
+  const tiny=suggestTarget({age:70,sex:"f",height:145,weight:40,job:"sitting",exercise:"rare",goal:"lose"});
+  console.assert(tiny.target===1200&&tiny.floored,"the floor must hold",tiny);
+
+  // every food row has the five numbers the app relies on
+  const bad=FOODS.filter(f=>!f.n||!f.cat||[f.cal,f.p,f.c,f.f,f.fib].some(v=>typeof v!=="number"));
+  console.assert(bad.length===0,"food entries missing numbers",bad);
+  console.assert(FOODS.length>250,"food list unexpectedly small",FOODS.length);
+}
+devCheck();
+
+/* ============================ ACCOUNTS ============================ */
+let authMode="in"; // "in" = sign in, "up" = create account
+/* The cook's four moods. Every failure path already funnels through
+   authError(), so hooking the head shake there covers wrong passwords,
+   empty fields and network errors in one place. */
+const mascot=$("#mascot");
+let moodT=null;
+function mood(m){
+  clearTimeout(moodT);
+  if(mascot.dataset.mood===m&&m==="no"){ mascot.dataset.mood="idle"; void mascot.offsetWidth; }
+  mascot.dataset.mood=m;
+  if(m==="no") moodT=setTimeout(rest,1050);
+}
+// Resting face depends on whether the password box still has the caret.
+function rest(){ mood(document.activeElement===$("#au-pass")?"peek":"idle"); }
+$("#au-pass").addEventListener("focus",()=>{ if(mascot.dataset.mood!=="yes") mood("peek"); });
+$("#au-pass").addEventListener("blur",()=>{ if(mascot.dataset.mood==="peek") mood("idle"); });
+function showAuth(){
+  // Whoever signs in next starts on Today, not on the tab the last session
+  // left open. Every route to the sign-in screen comes through here.
+  TAB="today";
+  $("#auth").hidden=false;
+  rest();
+  $("#auth-tag").textContent = authMode==="in"
+    ? "Sign in to reach your logs from any device."
+    : "Create an account and your logs follow you everywhere.";
+  $("#au-go").textContent = authMode==="in" ? "Sign in" : "Create account";
+  $("#au-name-field").hidden = authMode!=="up";
+  $("#au-pass").setAttribute("autocomplete",authMode==="in"?"current-password":"new-password");
+  $("#auth-alt").innerHTML = authMode==="in"
+    ? `New here? <button type="button" data-authmode="up">Create an account</button>`
+    : `Already have one? <button type="button" data-authmode="in">Sign in</button>`;
+}
+// Hold the overlay a beat when the cook is mid thumbs-up, so the sign-in
+// actually reads as approved instead of blinking straight past.
+function hideAuth(){
+  const wait=mascot.dataset.mood==="yes"?800:0;
+  setTimeout(()=>{ $("#auth").hidden=true; authError(""); mood("idle"); },wait);
+}
+// Pass note=true for a message that is not a refusal: it turns the box amber
+// and leaves the laddoo alone instead of shaking his head at you.
+function authError(msg,note){
+  const el=$("#auth-err"); el.textContent=msg||""; el.hidden=!msg;
+  el.classList.toggle("note",!!note);
+  if(msg&&!note) mood("no");
+}
+document.addEventListener("click",e=>{
+  const b=e.target.closest("[data-authmode]");
+  if(b){ authMode=b.dataset.authmode; authError(""); showAuth(); }
+});
+$("#auth-form").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const email=$("#au-email").value.trim(), pass=$("#au-pass").value;
+  const name=$("#au-name").value.trim();
+  if(!email||!pass){ authError("Enter your email and password."); return; }
+  if(authMode==="up"&&!name){ authError("Enter your name."); return; }
+  if(authMode==="up"&&pass.length<6){ authError("Use at least 6 characters."); return; }
+  const btn=$("#au-go"); const label=btn.textContent;
+  btn.disabled=true; btn.textContent="Working…"; authError("");
+  try{
+    const r = authMode==="in"
+      ? await sb.auth.signInWithPassword({email,password:pass})
+      // The name rides along in the account metadata, so it survives the
+      // email-confirmation round trip and is there at the next sign-in.
+      : await sb.auth.signUp({email,password:pass,options:{data:{name}}});
+    if(r.error) throw r.error;
+    if(r.data&&r.data.session) mood("yes");
+    // With email confirmation switched on, signUp returns no session yet.
+    if(authMode==="up"&&!r.data.session){
+      authMode="in"; showAuth();
+      authError("Check your email to confirm the account, then sign in.",true);
+    }
+  }catch(err){
+    authError(err&&err.message?err.message:"That didn't work. Try again.");
+  }finally{ btn.disabled=false; btn.textContent=label; }
+});
+async function signOut(){
+  try{ await sb.auth.signOut(); }catch(e){}
+  USER=null; S=loadState(); showAuth();
+}
+async function onSession(session){
+  if(!session||!session.user){ USER=null; showAuth(); return; }
+  USER={id:session.user.id,email:session.user.email,
+    name:((session.user.user_metadata||{}).name||"").trim()};
+  hideAuth();
+  S=loadState();          // paint instantly from this account's cache
+  if(!S.profile.name&&USER.name) S.profile.name=USER.name;
+  render();
+  try{ await pull(); render(); }                           // reconcile with server
+  catch(e){ console.error("[pull]",e); toast("Couldn't load your account — showing the last copy"); }
+  // Asked once, after the account's own numbers have landed. age is 0 on a new
+  // profile and -1 once someone has said "not now", so neither gets asked twice.
+  if(!S.profile.age) setTimeout(openTarget,600);
+}
+
+/* ============================ GO ============================ */
+async function boot(){
+  if(!CLOUD){ render(); return; }   // no Supabase configured: device-only mode
+  try{
+    const {createClient}=await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
+    sb=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+  }catch(e){
+    console.error("[supabase]",e);
+    render(); toast("Couldn't reach the sign-in service — saving on this device only");
+    return;
+  }
+  sb.auth.onAuthStateChange((_evt,session)=>onSession(session));
+  const {data}=await sb.auth.getSession();
+  onSession(data.session);
+}
+boot();
+</script>
+</body>
+</html>
