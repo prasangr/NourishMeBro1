@@ -12,6 +12,15 @@ create table if not exists public.profiles (
   user_id    uuid primary key references auth.users on delete cascade,
   name       text not null default '',
   email      text not null default '',
+  -- What the app asks once to suggest a calorie target. age 0 means never
+  -- asked, -1 means asked and declined, so neither state nags on every launch.
+  age        int  not null default 0,
+  sex        text not null default '',
+  height     int  not null default 0,
+  weight     numeric not null default 0,
+  job        text not null default '',
+  exercise   text not null default '',
+  goal       text not null default 'maintain',
   cal_goal   int not null default 2000,
   p          int not null default 120,
   c          int not null default 220,
@@ -23,8 +32,15 @@ create table if not exists public.profiles (
 );
 
 -- Existing projects: create table above is skipped, so add the columns here.
-alter table public.profiles add column if not exists name  text not null default '';
-alter table public.profiles add column if not exists email text not null default '';
+alter table public.profiles add column if not exists name     text not null default '';
+alter table public.profiles add column if not exists email    text not null default '';
+alter table public.profiles add column if not exists age      int  not null default 0;
+alter table public.profiles add column if not exists sex      text not null default '';
+alter table public.profiles add column if not exists height   int  not null default 0;
+alter table public.profiles add column if not exists weight   numeric not null default 0;
+alter table public.profiles add column if not exists job      text not null default '';
+alter table public.profiles add column if not exists exercise text not null default '';
+alter table public.profiles add column if not exists goal     text not null default 'maintain';
 
 create table if not exists public.habits (
   user_id uuid not null references auth.users on delete cascade,
