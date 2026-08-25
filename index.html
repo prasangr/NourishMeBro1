@@ -12,6 +12,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Nourish me Bro">
 <title>Nourish me Bro &mdash; calories &amp; habits</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Hanken+Grotesk:wght@400..800&display=swap">
@@ -1645,10 +1648,40 @@ async function push(w){
 // supabase-js resolves with {error} rather than throwing, so failures are easy
 // to miss. Turn them back into exceptions.
 async function chk(q){ const r=await q; if(r&&r.error) throw r.error; return r; }
+/* A push that fails used to end here, with a toast and nothing else -- the
+   change stayed on the device and pull() wiped it on the next launch, because
+   pull() replaces S.days rather than merging into it. So a failure is now
+   recorded, and recorded in localStorage so it survives a reload. */
+function dirtyKey(){ return cacheKey()+".dirty"; }
+function isDirty(){ try{ return localStorage.getItem(dirtyKey())==="1"; }catch(e){ return false; } }
+function setDirty(v){
+  try{ v?localStorage.setItem(dirtyKey(),"1"):localStorage.removeItem(dirtyKey()); }catch(e){}
+}
 function syncFailed(e){
   console.error("[sync]",e);
-  toast("Not saved to your account — check your connection");
+  setDirty(true);
+  // The old wording said the data was gone. It is not: it is on this device.
+  toast("Saved on this device — will sync when you're back online");
 }
+/* No write queue: pushAll() already sends the whole local state, and every
+   write is an upsert, so replaying the lot is idempotent and far less code
+   than tracking individual writes.
+   ponytail: additions only. An offline *delete* still will not propagate --
+   that needs tombstones, and losing a meal you logged is the worse half. */
+async function flushDirty(){
+  if(!isDirty()||!CLOUD||!USER||!sb) return !isDirty();
+  try{
+    await pushAll();
+    setDirty(false);
+    return true;
+  }catch(e){
+    console.error("[resync]",e);   // still no connection; stay dirty and retry later
+    return false;
+  }
+}
+function retrySync(){ if(isDirty()) flushDirty().then(ok=>{ if(ok) toast("Synced to your account"); }); }
+addEventListener("online",retrySync);
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden) retrySync(); });
 async function pushAll(){
   await chk(sb.from("profiles").upsert(rowProfile()));
   if(S.habits.length)      await chk(sb.from("habits").upsert(S.habits.map(rowHabit)));
@@ -3504,8 +3537,17 @@ async function onSession(session){
   S=loadState();          // paint instantly from this account's cache
   if(!S.profile.name&&USER.name) S.profile.name=USER.name;
   render();
-  try{ await pull(); render(); }                           // reconcile with server
-  catch(e){ console.error("[pull]",e); toast("Couldn't load your account — showing the last copy"); }
+  /* Anything this device logged while offline goes up BEFORE the server comes
+     down. If it cannot go up, pull() is skipped entirely -- reconciling would
+     replace S.days and take the unsynced work with it. Staying on local state
+     and retrying later is the only safe move. */
+  const flushed=await flushDirty();
+  if(!flushed){
+    toast("Offline — your logs are safe here and will sync when you're back");
+  }else{
+    try{ await pull(); render(); }                         // reconcile with server
+    catch(e){ console.error("[pull]",e); toast("Couldn't load your account — showing the last copy"); }
+  }
   // Asked once, after the account's own numbers have landed. age is 0 on a new
   // profile and -1 once someone has said "not now", so neither gets asked twice.
   if(!S.profile.age) setTimeout(openTarget,600);
@@ -3527,6 +3569,15 @@ async function boot(){
   onSession(data.session);
 }
 boot();
+
+/* Registered after load and never awaited: a browser with no service
+   workers, or the file opened straight off disk, has to carry on exactly
+   as it did before. A failure here is a warning, never a broken app. */
+if("serviceWorker" in navigator){
+  addEventListener("load",()=>{
+    navigator.serviceWorker.register("sw.js").catch(e=>console.warn("[sw]",e));
+  });
+}
 </script>
 </body>
 </html>
