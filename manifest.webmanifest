@@ -1,0 +1,17 @@
+{
+  "name": "Nourish me Bro",
+  "short_name": "Nourish",
+  "description": "Track calories, macros and daily habits. Built around Indian home food.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#E9ECEE",
+  "theme_color": "#E9ECEE",
+  "categories": ["health", "food", "lifestyle"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
