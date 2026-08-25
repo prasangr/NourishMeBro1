@@ -602,6 +602,9 @@ button{cursor:pointer;border:none;background:none;touch-action:manipulation}
 .btotal span{font-size:17px;color:var(--ink);font-variant-numeric:tabular-nums;
   text-transform:none;letter-spacing:0}
 
+/* The day card's own button. Only drawn on a day with something on it. */
+.share-day{margin-top:2px}
+
 /* ---------------- weekly card ---------------- */
 .wk-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
 .wk-stats div{text-align:center;min-width:0}
@@ -1842,7 +1845,10 @@ function viewToday(){
     </div>
   </section>
 
-  ${MEALS.map(m=>mealGroup(m,t)).join("")}`;
+  ${MEALS.map(m=>mealGroup(m,t)).join("")}
+  ${t.meals.length
+    ? `<button class="btn ghost share-day" data-act="share-day">Share today</button>`
+    : ""}`;
 }
 
 function mealGroup(m,t){
@@ -2157,6 +2163,189 @@ function foodRow(f,i){
 }
 
 /* ---------- YOU ---------- */
+/* ====================== SHAREABLE DAY CARD ======================
+   Paints today onto a canvas and hands it to the share sheet. The card is
+   always the light palette whatever theme the app is in: the same day shared
+   twice should not look like two different apps. Colours are written as fixed
+   hexes here for that reason -- reading the CSS variables would follow the
+   theme. */
+const CARD={
+  bg:"#FFFFFF", ink:"#15191C", ink2:"#4E585F", ink3:"#7F8B93",
+  line:"#D7DDE1", sunk:"#E3E7EA", accent:"#A0680B",
+  tone:{breakfast:"#F6C445", lunch:"#E4832A", snack:"#A9503C", dinner:"#3F4E8C"},
+};
+const CARD_W=1080, CARD_H=1350, CARD_PAD=80;
+const SITE="prasangr.github.io/NourishMeBro1";
+
+/* Every number the card draws, and no drawing -- so the arithmetic can be
+   checked without a canvas. */
+function cardData(ds){
+  ds=ds||todayStr();
+  const t=day(ds), tot=sumMeals(t.meals), p=S.profile;
+  return {
+    dateLabel:new Date(ds+"T00:00:00").toLocaleDateString("en-US",
+      {weekday:"long",month:"short",day:"numeric"}),
+    cal:round(tot.cal), goal:p.calGoal, pct:pct(tot.cal,p.calGoal),
+    protein:round(tot.p),
+    meals:MEALS.map(m=>({l:m.l, e:m.e, tone:CARD.tone[m.k],
+      cal:round(t.meals.filter(x=>x.meal===m.k).reduce((a,b)=>a+(b.cal||0),0))})),
+    habitsDone:S.habits.filter(h=>isHabitDone(h,t)).length,
+    habitsTotal:S.habits.length,
+    water:t.water||0,
+  };
+}
+
+/* The laddoo, cloned out of the live page rather than redrawn, so the card can
+   never drift from the app. His colours are fixed hexes already; only the plate
+   follows the theme, so it is the one thing restated here. The hands are the
+   CSS-transformed parts and there is no CSS in a serialised SVG, so they go. */
+function mascotURI(){
+  const live=$("#mascot svg");
+  if(!live) return null;
+  const svg=live.cloneNode(true);
+  svg.querySelectorAll(".m-hand,.m-hold,.m-joy,.m-frown,.m-grin").forEach(n=>n.remove());
+  svg.setAttribute("xmlns","http://www.w3.org/2000/svg");
+  svg.setAttribute("width","120"); svg.setAttribute("height","124");
+  const st=document.createElementNS("http://www.w3.org/2000/svg","style");
+  // The plate is the one part that follows the theme in the app: white on a
+  // grey page. The card is white, so it is inverted here or it vanishes.
+  st.textContent=`.m-plate{fill:#EFF2F4;stroke:#BFC8CE;stroke-width:2}
+    .m-rim{fill:none;stroke:#BFC8CE;stroke-width:1.5;opacity:.9}
+    .m-ink{stroke:#4A3010;stroke-width:3;stroke-linejoin:round;stroke-linecap:round}
+    .m-body{fill:#EDA93E}.m-limb{fill:#E39C31}.m-crumb{fill:#C8811C}
+    .m-white{fill:#FFFFFF}.m-pupil{fill:#3A2712}.m-shine{fill:#FFFFFF}
+    .m-cheek{fill:#D9542F;opacity:.32}
+    .m-line{fill:none;stroke:#3A2712;stroke-width:3.6;stroke-linecap:round}
+    .m-mouth{opacity:1}`;
+  svg.insertBefore(st,svg.firstChild);
+  return "data:image/svg+xml;charset=utf-8,"
+    +encodeURIComponent(new XMLSerializer().serializeToString(svg));
+}
+function loadImg(src){
+  return new Promise(res=>{
+    if(!src) return res(null);
+    const i=new Image();
+    i.onload=()=>res(i); i.onerror=()=>res(null);   // a missing mascot must not block the share
+    i.src=src;
+  });
+}
+const EMOJI_FONT='"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif';
+const numFont=px=>`800 ${px}px Archivo,system-ui,sans-serif`;
+const txtFont=(px,w)=>`${w||600} ${px}px "Hanken Grotesk",system-ui,sans-serif`;
+
+async function drawCard(cv,d){
+  cv.width=CARD_W; cv.height=CARD_H;
+  const g=cv.getContext("2d");
+  const R=CARD_PAD, RIGHT=CARD_W-CARD_PAD, BARW=CARD_W-CARD_PAD*2;
+  g.fillStyle=CARD.bg; g.fillRect(0,0,CARD_W,CARD_H);
+  g.textBaseline="alphabetic";
+
+  // -- mascot and date --
+  const m=await loadImg(mascotURI());
+  if(m) g.drawImage(m,R,R,210,217);
+  g.textAlign="right"; g.fillStyle=CARD.ink2; g.font=txtFont(38,700);
+  g.fillText(d.dateLabel,RIGHT,R+130);
+
+  // -- the number --
+  g.textAlign="left"; g.fillStyle=CARD.ink; g.font=numFont(140);
+  const calTxt=d.cal.toLocaleString("en-US");
+  g.fillText(calTxt,R,440);
+  const calW=g.measureText(calTxt).width;
+  g.fillStyle=CARD.ink3; g.font=txtFont(44,700);
+  g.fillText("kcal",R+calW+18,440);
+  g.textAlign="right"; g.font=txtFont(38,600);
+  g.fillText(`of ${d.goal.toLocaleString("en-US")}`,RIGHT,440);
+
+  // -- the bar: one segment per meal, in the sky ramp, over the same span the
+  //    app's rail uses. Grey tail when under goal, a tick when over. --
+  const barY=486, barH=30, span=Math.max(d.goal,d.cal,1);
+  g.save();
+  g.beginPath(); g.roundRect(R,barY,BARW,barH,barH/2); g.clip();
+  g.fillStyle=CARD.sunk; g.fillRect(R,barY,BARW,barH);
+  let x=R;
+  d.meals.forEach(mm=>{
+    const w=BARW*(mm.cal/span);
+    if(w>0){ g.fillStyle=mm.tone; g.fillRect(x,barY,w+.5,barH); x+=w; }
+  });
+  if(d.cal>d.goal&&d.goal>0){
+    g.fillStyle=CARD.ink;
+    g.fillRect(R+BARW*(d.goal/span)-3,barY,6,barH);   // where the goal sat
+  }
+  g.restore();
+
+  // -- the meals. All four always, the empty ones dimmed: "did not snack" is
+  //    worth saying, and a fixed height keeps the footer where it belongs. --
+  let y=630;
+  d.meals.forEach(mm=>{
+    const on=mm.cal>0;
+    g.textAlign="left"; g.font=`52px ${EMOJI_FONT}`;
+    g.globalAlpha=on?1:.32; g.fillText(mm.e,R,y);
+    g.globalAlpha=1;
+    g.fillStyle=on?CARD.ink:CARD.ink3; g.font=txtFont(44,on?700:600);
+    g.fillText(mm.l,R+86,y);
+    g.textAlign="right"; g.font=numFont(44);
+    g.fillStyle=on?CARD.ink:CARD.ink3;
+    g.fillText(on?mm.cal.toLocaleString("en-US"):"—",RIGHT,y);
+    y+=104;
+  });
+
+  /* Rule and footer are pinned rather than accumulated: letting them drift off
+     the meal loop left a dead band above the rule and a cramped footer under
+     it. Fixed positions keep the bottom third breathing whatever the meals do. */
+  const RULE_Y=1002, STATS_Y=1074;
+  g.fillStyle=CARD.line; g.fillRect(R,RULE_Y,BARW,2);
+  const bits=[`${d.protein}g protein`];
+  if(d.habitsTotal) bits.push(`${d.habitsDone}/${d.habitsTotal} habits`);
+  if(d.water) bits.push(`${(d.water/1000).toFixed(1)}L water`);
+  g.textAlign="left"; g.fillStyle=CARD.ink2; g.font=txtFont(42,700);
+  g.fillText(bits.join("  ·  "),R,STATS_Y);
+
+  // -- wordmark and where to get it --
+  g.fillStyle=CARD.ink; g.font=numFont(48);
+  g.fillText("Nourish me Bro",R,CARD_H-CARD_PAD-58);
+  g.fillStyle=CARD.accent; g.font=txtFont(32,700);
+  g.fillText(SITE,R,CARD_H-CARD_PAD-8);
+  return cv;
+}
+
+/* Canvas silently falls back to a system font if it draws before the webfonts
+   land, so the fonts are waited on rather than hoped for. */
+async function shareDay(){
+  const btn=$('[data-act="share-day"]');
+  const label=btn?btn.textContent:"";
+  if(btn){ btn.disabled=true; btn.textContent="Drawing…"; }
+  try{
+    try{
+      await Promise.all([document.fonts.load(numFont(140)),
+        document.fonts.load(txtFont(44,700))]);
+      await document.fonts.ready;
+    }catch(e){}
+    const d=cardData();
+    const cv=await drawCard(document.createElement("canvas"),d);
+    const blob=await new Promise(r=>cv.toBlob(r,"image/png"));
+    if(!blob) throw new Error("canvas gave no image");
+    const name=`nourish-${todayStr()}.png`;
+    const file=new File([blob],name,{type:"image/png"});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      await navigator.share({files:[file],title:"Nourish me Bro",
+        text:`${d.cal} kcal today — ${SITE}`});
+    }else{
+      // Desktop mostly cannot share a file; hand it over as a download instead.
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement("a");
+      a.href=url; a.download=name; a.click();
+      setTimeout(()=>URL.revokeObjectURL(url),10000);
+      toast("Card saved to your downloads");
+    }
+  }catch(e){
+    if(e&&e.name==="AbortError") return;    // the sheet was dismissed, not a failure
+    console.error("[share]",e);
+    toast("Couldn't make the card");
+  }finally{
+    if(btn){ btn.disabled=false; btn.textContent=label||"Share today"; }
+  }
+}
+
 /* ---------- this week ---------- */
 /* Fourteen days split down the middle, so every number on the card carries a
    comparison. Averages count only the days that were logged -- a skipped day
@@ -2817,6 +3006,7 @@ document.addEventListener("click",e=>{
   if(el('[data-act="bback"]')){ drawBatch(); return; }
   if((n=el("[data-bmp]"))){ if(batch){ batch.meal=n.dataset.bmp; drawBatch(); } return; }
   if(el('[data-act="confirm-batch"]')){ commitBatch(); return; }
+  if(el('[data-act="share-day"]')){ shareDay(); return; }
   if(el('[data-act="save-quick"]')){ saveQuick(); return; }
   if(el('[data-act="confirm-log"]')){ commitLog(); return; }
   if(el('[data-act="add-food"]')){ openAddFood(); return; }
@@ -3208,6 +3398,21 @@ function devCheck(){
   console.assert(weekTip({now:{logged:0,cal:0,p:0,fib:0,water:0},was:{logged:0}}).t.length>0,
     "an empty week still gets a line");
   console.assert(viewWeek().indexOf("wk-tip")>-1,"the weekly card must draw its tip");
+
+  // ---- the day card ----
+  const cd=cardData();
+  console.assert(cd.meals.length===4,"the card shows all four meals",cd.meals.length);
+  console.assert(cd.meals.every(m=>m.tone&&m.tone[0]==="#"),
+    "the card carries fixed hexes, not theme variables",cd.meals.map(m=>m.tone));
+  console.assert(Math.abs(cd.meals.reduce((a,m)=>a+m.cal,0)-cd.cal)<=4,
+    "the meals on the card must add up to its total",cd.meals.map(m=>m.cal),cd.cal);
+  console.assert(cd.habitsTotal===S.habits.length,"habit count must match the list");
+  console.assert(cd.habitsDone<=cd.habitsTotal,"more habits done than exist");
+  console.assert(cd.pct>=0&&cd.pct<=100,"the bar has to stay inside itself",cd.pct);
+  // a day with nothing on it still has to produce a card, not throw
+  const empty=cardData("1999-01-01");
+  console.assert(empty.cal===0&&empty.meals.length===4&&empty.pct===0,
+    "an empty day must come back as zeros",empty);
 }
 devCheck();
 
