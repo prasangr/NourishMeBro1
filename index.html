@@ -214,6 +214,17 @@ button{cursor:pointer;border:none;background:none;touch-action:manipulation}
   flex:none;display:grid;place-items:center;border-radius:8px}
 .fi .del:active{background:var(--surface-2)}
 .empty{color:var(--ink-3);font-size:13px;text-align:center;padding:16px 0 6px;font-weight:600}
+/* The logged row's body is a button now; it must not look like one. */
+.fi .fi-b{background:none;border:none;padding:0;text-align:left;font:inherit;color:inherit}
+.fi .fi-b:active .fi-n{color:var(--accent)}
+/* Offered on an empty meal, so it sits where the food would have been. */
+.copy-y{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  margin-top:10px;min-height:44px;border-radius:10px;background:var(--surface-2);
+  border:1px dashed var(--line-2);font-size:13px;font-weight:700;color:var(--ink-2)}
+.copy-y b{font-weight:800;color:var(--ink)}
+.copy-y:active{background:var(--accent-soft);border-color:var(--accent)}
+.quick-link{width:100%;text-align:left;padding:2px 0 10px;color:var(--accent);
+  font-size:13px;font-weight:800;min-height:36px}
 
 /* Shown only when the browser refuses to persist anything (sandboxed frame,
    private mode). Silent data loss is worse than an ugly banner. */
@@ -547,6 +558,64 @@ button{cursor:pointer;border:none;background:none;touch-action:manipulation}
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{transition-duration:.01ms!important;animation-duration:.01ms!important}
 }
+/* ---------------- type a whole meal ---------------- */
+/* Shows up in the picker only once the search text reads as two or more
+   dishes, so searching for one thing is exactly as it was. */
+.typed-bar{display:flex;align-items:center;gap:11px;width:100%;text-align:left;
+  padding:11px 12px;margin:2px 0 4px;border-radius:11px;background:var(--accent-soft);
+  border:1px solid var(--accent);min-height:52px}
+.typed-bar:active{filter:brightness(.96)}
+.typed-bar .tb-em{font-size:19px;flex:none}
+.typed-bar .tb-b{flex:1;min-width:0}
+.typed-bar b{display:block;font-size:14px;font-weight:800;color:var(--ink)}
+.typed-bar .tb-s{display:block;font-size:11.5px;color:var(--ink-2);font-weight:600;
+  margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.typed-bar .tb-cal{font-size:13.5px;font-weight:800;font-variant-numeric:tabular-nums;
+  flex:none}
+
+.brow{display:flex;align-items:center;gap:9px;padding:10px 0;border-top:1px solid var(--line)}
+.brow:first-of-type{border-top:none}
+.brow .b-em{font-size:19px;flex:none;width:22px;text-align:center}
+.brow .b-b{flex:1;min-width:0;background:none;border:none;padding:0;text-align:left;
+  font:inherit;color:inherit}
+.brow .b-n{font-size:14px;font-weight:700;line-height:1.25;display:block}
+.brow .b-s{font-size:11px;color:var(--ink-3);font-weight:600;margin-top:2px;display:block;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.brow .b-b:active .b-n{color:var(--accent)}
+.bqty{display:flex;align-items:center;flex:none;background:var(--surface-2);
+  border:1px solid var(--line);border-radius:9px}
+.bqty button{width:30px;height:34px;font-size:15px;font-weight:800;color:var(--ink-2)}
+.bqty button:active{color:var(--accent)}
+.bqty b{font-size:12px;font-weight:800;min-width:32px;text-align:center;
+  font-variant-numeric:tabular-nums}
+.brow .b-cal{font-size:13px;font-weight:800;font-variant-numeric:tabular-nums;flex:none;
+  min-width:36px;text-align:right}
+.brow .b-x{color:var(--ink-3);font-size:13px;width:30px;height:34px;flex:none;
+  display:grid;place-items:center;border-radius:8px}
+.brow .b-x:active{background:var(--surface-2)}
+.bmiss{font-size:12.5px;color:var(--ink-3);font-weight:600;padding:10px 0;line-height:1.5;
+  border-top:1px solid var(--line)}
+.bmiss b{color:var(--ink-2);font-weight:800}
+.btotal{display:flex;justify-content:space-between;align-items:baseline;
+  padding:13px 0 15px;font-size:11px;font-weight:800;color:var(--ink-3);
+  text-transform:uppercase;letter-spacing:.07em}
+.btotal span{font-size:17px;color:var(--ink);font-variant-numeric:tabular-nums;
+  text-transform:none;letter-spacing:0}
+
+/* ---------------- weekly card ---------------- */
+.wk-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.wk-stats div{text-align:center;min-width:0}
+.wk-stats .v{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1}
+.wk-stats .k{font-size:9.5px;color:var(--ink-3);font-weight:800;text-transform:uppercase;
+  letter-spacing:.04em;margin-top:3px}
+/* Deltas stay grey on purpose: a heavier week is information, not a telling-off. */
+.wk-stats .d{font-size:10.5px;color:var(--ink-3);font-weight:700;margin-top:4px;
+  font-variant-numeric:tabular-nums}
+.wk-tip{display:flex;gap:10px;align-items:flex-start;margin-top:15px;padding-top:14px;
+  border-top:1px solid var(--line)}
+.wk-tip .wt-i{font-size:18px;flex:none;line-height:1.4}
+.wk-tip .wt-t{font-size:13px;line-height:1.5;color:var(--ink-2);font-weight:600}
+
 </style>
 </head>
 <body>
@@ -1517,6 +1586,7 @@ function loadState(){
   s.days=s.days||{};
   s.habits=s.habits||DEFAULT_HABITS.map(h=>Object.assign({},h));
   s.customFoods=s.customFoods||[];
+  s.qty=s.qty||{};                 // dish -> last quantity, so the sheet opens where you left it
   return s;
 }
 let S=loadState();
@@ -1558,7 +1628,9 @@ async function push(w){
   try{
     if(w.profile) await chk(sb.from("profiles").upsert(rowProfile()));
     if(w.day)     await chk(sb.from("day_logs").upsert(rowDay(w.day)));
-    if(w.meal)    await chk(sb.from("meal_entries").insert(rowMeal(w.meal,w.day||todayStr())));
+    // upsert, not insert: an edit keeps the entry's id on purpose, so the
+    // second write of the same row has to update it rather than collide.
+    if(w.meal)    await chk(sb.from("meal_entries").upsert(rowMeal(w.meal,w.day||todayStr())));
     if(w.unmeal)  await chk(sb.from("meal_entries").delete().eq("user_id",uid()).eq("id",w.unmeal));
     if(w.habit)   await chk(sb.from("habits").upsert(rowHabit(w.habit)));
     if(w.unhabit) await chk(sb.from("habits").delete().eq("user_id",uid()).eq("id",w.unhabit));
@@ -1789,14 +1861,38 @@ function mealGroup(m,t){
       <span>Fat <b>${round(tot.f)}g</b></span>
       <span>Fibre <b>${round(tot.fib)}g</b></span>
     </div>`:""}
-    ${items.map(itemRow).join("")}
+    ${items.length?items.map(itemRow).join(""):sameAsYesterday(m)}
   </section>`;
 }
 // Every logged item carries its own macro breakdown, visible without a tap.
+// Yesterday's version of this meal, offered only when there is one. Most days
+// breakfast is the same breakfast, and six taps for that is five too many.
+function yesterdayMeals(k){
+  const ds=new Date(Date.now()-86400000).toLocaleDateString("en-CA");
+  return ((S.days[ds]||{}).meals||[]).filter(x=>x.meal===k);
+}
+function sameAsYesterday(m){
+  const prev=yesterdayMeals(m.k);
+  if(!prev.length) return "";
+  return `<button class="copy-y" data-copy="${m.k}">Same as yesterday
+    <b>${round(sumMeals(prev).cal)} kcal</b></button>`;
+}
+function copyYesterday(k){
+  const prev=yesterdayMeals(k);
+  if(!prev.length) return;
+  const t=day();
+  prev.forEach(x=>{
+    const item=Object.assign({},x,{id:newId()});
+    t.meals.push(item); save({meal:item});
+  });
+  render();
+  toast(`Added ${prev.length} item${prev.length>1?"s":""} to ${mealOf(k).l}`);
+}
+// The body is a button: tapping a logged row reopens it to change the amount.
 function itemRow(x){
   return `<div class="fi">
     <span class="fi-em">${esc(x.e||"\u{1F37D}️")}</span>
-    <div class="fi-b">
+    <button class="fi-b" data-edit="${esc(x.id)}" aria-label="Change ${esc(x.name)}">
       <div class="fi-n">${esc(x.name)}</div>
       <div class="fi-q">${esc(x.qtyLabel||"")}</div>
       <div class="fi-macros">
@@ -1805,7 +1901,7 @@ function itemRow(x){
         <b style="--tone:var(--m-f)">F ${round(x.f)}g</b>
         <b style="--tone:var(--m-fib)">Fibre ${round(x.fib)}g</b>
       </div>
-    </div>
+    </button>
     <div class="fi-cal">${round(x.cal)}</div>
     <button class="del" data-del="${esc(x.id)}" aria-label="Remove ${esc(x.name)}">✕</button>
   </div>`;
@@ -2061,9 +2157,87 @@ function foodRow(f,i){
 }
 
 /* ---------- YOU ---------- */
+/* ---------- this week ---------- */
+/* Fourteen days split down the middle, so every number on the card carries a
+   comparison. Averages count only the days that were logged -- a skipped day
+   should not read as a day you ate nothing. */
+function weekStats(){
+  const days=lastN(14);
+  const agg=list=>{
+    let logged=0,cal=0,p=0,fib=0,water=0,wd=0;
+    list.forEach(x=>{
+      const rec=S.days[x.ds]; if(!rec) return;
+      const meals=rec.meals||[];
+      if(meals.length){ const t=sumMeals(meals); logged++; cal+=t.cal; p+=t.p; fib+=t.fib; }
+      if(rec.water){ water+=rec.water; wd++; }
+    });
+    return {logged, cal:logged?cal/logged:0, p:logged?p/logged:0,
+      fib:logged?fib/logged:0, water:wd?water/wd:0};
+  };
+  return {now:agg(days.slice(7)), was:agg(days.slice(0,7))};
+}
+// The habit with the worst week, for the tip to pick on.
+function weakestHabit(){
+  if(!S.habits.length) return null;
+  const week=lastN(7);
+  return S.habits.map(h=>({h,done:week.filter(x=>isHabitDone(h,S.days[x.ds])).length}))
+    .sort((a,b)=>a.done-b.done)[0];
+}
+// Something protein-heavy you already eat beats something protein-heavy you don't.
+function proteinPick(){
+  const {ix,list}=recentFoods(40);
+  const eaten=list.map(i=>ix.all[i]).filter(f=>f.p>=10).sort((a,b)=>b.p-a.p);
+  return eaten[0]||ix.all.filter(f=>f.p>=15).sort((a,b)=>b.p-a.p)[0]||null;
+}
+/* One line, not a list. Ranked, and the first rule that fires wins -- a wall of
+   advice gets skimmed past, and being told off is why people delete these apps.
+   So: nothing here scolds, and a clean week gets said out loud. */
+function weekTip(w){
+  const p=S.profile, n=w.now;
+  if(!n.logged) return {i:"\u{1F44B}",
+    t:"Nothing logged in the last seven days. One meal is enough to pick it back up — everything else is still here."};
+  if(n.logged<=2) return {i:"\u{1F331}",
+    t:`${n.logged} day${n.logged>1?"s":""} logged this week. Around five is where the averages start telling you something.`};
+  if(p.p&&n.p<p.p*.8){
+    const pick=proteinPick();
+    return {i:"\u{1F4AA}",
+      t:`Protein came in about ${round(p.p-n.p)}g short on a typical day.`
+        +(pick?` A serving of ${pick.n} is ${round(pick.p)}g of that.`:"")};
+  }
+  if(p.fib&&n.fib<p.fib*.7) return {i:"\u{1F96C}",
+    t:`Fibre averaged ${round(n.fib)}g against a goal of ${p.fib}g. Dal, chana and a piece of fruit are the cheapest way to close it.`};
+  if(p.waterGoal&&n.water&&n.water<p.waterGoal*.7) return {i:"\u{1F4A7}",
+    t:`Water averaged ${(n.water/1000).toFixed(1)}L against ${(p.waterGoal/1000).toFixed(1)}L. A glass with each meal covers most of the gap.`};
+  const weak=weakestHabit();
+  if(weak&&weak.done<=2) return {i:weak.h.e||"\u{1F3AF}",
+    t:`${weak.h.name} got ticked ${weak.done} of 7 days — the one worth picking on this week.`};
+  return {i:"✨",
+    t:`Good week — ${n.logged} days logged and nothing off target. Keep it boring.`};
+}
+function viewWeek(){
+  const w=weekStats(), n=w.now, o=w.was, tip=weekTip(w);
+  // No comparison to draw until there are two weeks to compare.
+  const d=(a,b,dp)=>{
+    if(!o.logged||!n.logged) return "";
+    const gap=a-b;
+    if(Math.abs(gap)<(dp?.05:1)) return `<div class="d">=</div>`;
+    return `<div class="d">${gap>0?"▲":"▼"} ${dp?Math.abs(gap).toFixed(1):round(Math.abs(gap))}</div>`;
+  };
+  const u=`<small style="font-size:11px">`;
+  return `<section class="card"><h2>This week</h2>
+    <div class="wk-stats">
+      <div><div class="v">${round(n.cal)}</div><div class="k">avg kcal</div>${d(n.cal,o.cal)}</div>
+      <div><div class="v">${round(n.p)}${u}g</small></div><div class="k">protein</div>${d(n.p,o.p)}</div>
+      <div><div class="v">${n.logged}${u}/7</small></div><div class="k">logged</div>${d(n.logged,o.logged)}</div>
+      <div><div class="v">${(n.water/1000).toFixed(1)}${u}L</small></div><div class="k">water</div>${d(n.water/1000,o.water/1000,1)}</div>
+    </div>
+    <div class="wk-tip"><span class="wt-i">${tip.i}</span><span class="wt-t">${esc(tip.t)}</span></div>
+  </section>`;
+}
+
 function viewYou(){
   const p=S.profile, st=calStats(calRange), weekly=calRange>35;
-  return header("You")+
+  return header("You")+viewWeek()+
   `<section class="card"><h2>Calories</h2>
     <div class="cats">${RANGES.map(r=>
       `<button class="cat${r.k===calRange?" on":""}" data-range="${r.k}">${esc(r.l)}</button>`).join("")}</div>
@@ -2124,7 +2298,8 @@ function openSheet(title,html,tall){
   sheet.classList.toggle("tall",!!tall);
   scrim.classList.add("on"); sheet.classList.add("on");
 }
-function closeSheet(){ scrim.classList.remove("on"); sheet.classList.remove("on"); pending=null; }
+function closeSheet(){ scrim.classList.remove("on"); sheet.classList.remove("on");
+  pending=null; batch=null; }
 scrim.onclick=closeSheet; $("#sh-x").onclick=closeSheet;
 document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&sheet.classList.contains("on")) closeSheet(); });
 
@@ -2133,6 +2308,7 @@ function openFoodPicker(meal){
   openSheet("Add to "+mealOf(meal).l,
     `<div class="search pin"><span class="ic">\u{1F50D}</span>
       <input id="pickSearch" type="search" autocomplete="off" autocorrect="off" placeholder="Search foods"></div>
+     <button class="quick-link" data-quick="${meal}">Just calories &rsaquo;</button>
      <div id="pickList"></div>`, true);
   const inp=$("#pickSearch");
   pickMeal=meal;
@@ -2148,15 +2324,243 @@ function renderPickList(q){
   const head=recent.length
     ? `<div class="cat-h">Recent</div>${recent.map(i=>foodRow(all[i],i)).join("")}
        <div class="cat-h">All foods</div>` : "";
-  $("#pickList").innerHTML=(list.length?head+list.map(f=>foodRow(f,of.get(f))).join("")
+  $("#pickList").innerHTML=typedBar(q)
+    +(list.length?head+list.map(f=>foodRow(f,of.get(f))).join("")
     :`<div class="empty">No match for "${esc(q)}"</div>`)
     +`<button class="addfood-link" data-act="add-food">+ Add a custom food</button>`;
 }
 
+/* ====================== TYPE A WHOLE MEAL ======================
+   "2 roti, dal, chawal" in the search box turns into three logged dishes.
+   Nothing here commits: a parse only ever opens a confirm sheet, which is what
+   lets the matching be aggressive without being dangerous. */
+
+// Separators are a convenience, not a syntax -- a line with none of them is
+// still walked word by word below.
+const SEP=/\s*(?:,|\+|&|\band\b|\baur\b|\n)\s*/;
+// Quantity words, Hindi included, because that is how people actually type.
+const QTY_WORD={half:.5,aadha:.5,adha:.5,ek:1,one:1,do:2,two:2,teen:3,three:3,
+  char:4,chaar:4,four:4};
+// Serving words carry no dish, so they come out before matching. Only out of
+// the query -- the food list keeps its own wording.
+const NOISE=new Set(["a","an","the","of","some","with","bowl","bowls","katori","plate",
+  "plates","glass","glasses","cup","cups","piece","pieces","slice","slices",
+  "serving","servings","pc","pcs"]);
+// For the handful of words that name a whole shelf, the plain version is what
+// people mean. Recency still overrides this -- see scoreFood.
+const PREFER={rice:"Steamed Rice",chawal:"Steamed Rice",dal:"Dal Tadka",daal:"Dal Tadka",
+  roti:"Roti / Chapati",chapati:"Roti / Chapati",chapathi:"Roti / Chapati",
+  milk:"Milk (toned)",curd:"Curd / Dahi",dahi:"Curd / Dahi",egg:"Boiled Egg",
+  chai:"Masala Chai (w/ sugar)",tea:"Masala Chai (w/ sugar)"};
+
+// Dish name -> how recently it was eaten (0 = most recent). The most useful
+// signal there is: everyone eats the same twenty dishes, so "dal" almost
+// always means the dal you had last week.
+function recentRank(){
+  const {ix,list}=recentFoods(40), m=new Map();
+  list.forEach((idx,k)=>m.set(ix.all[idx].n.toLowerCase(),k));
+  return m;
+}
+// Does the dish's own name carry every word typed? Stricter than hits(), which
+// also searches the category and the serving.
+function nameCovers(f,words){
+  const name=f.n.toLowerCase(), flat=squeeze(name);
+  return words.every(w=>name.includes(w)||flat.includes(squeeze(w))
+    ||(ALIAS[w]&&name.includes(ALIAS[w])));
+}
+function scoreFood(f,phrase,rank){
+  const name=f.n.toLowerCase();
+  let s=0;
+  if(name===phrase) s+=1000;
+  else if(name.startsWith(phrase)) s+=120;
+  else if(name.includes(phrase)) s+=60;
+  if(PREFER[phrase]&&PREFER[phrase].toLowerCase()===name) s+=250;
+  const r=rank.get(name);
+  if(r!==undefined) s+=400-r*8;          // beats PREFER, loses to an exact name
+  return s-Math.min(50,f.n.length);      // a shorter name is a closer fit
+}
+/* One phrase -> the best dish plus the runners-up, so the confirm sheet can
+   offer a swap instead of making you start over. */
+function matchPhrase(phrase,ix,rank){
+  phrase=(phrase||"").trim();
+  // A bare number would otherwise match every "1 bowl (200g)" serving there is.
+  if(!phrase||/^[\d.\sx]+$/.test(phrase)) return null;
+  const exact=ix.byName.get(phrase);
+  if(exact!==undefined) return {food:ix.all[exact],alts:[]};
+  const cands=ix.all.filter(f=>hits(f,phrase));
+  if(!cands.length) return null;
+  cands.sort((a,b)=>scoreFood(b,phrase,rank)-scoreFood(a,phrase,rank));
+  return {food:cands[0],alts:cands.slice(1,6)};
+}
+// Pull a leading (or trailing) quantity off a chunk: "2 roti", "roti x2".
+function takeQty(words){
+  if(!words.length) return {mult:1,words};
+  let m=/^(\d+(?:\.\d+)?)x?$/.exec(words[0]);
+  if(m&&words.length>1) return {mult:clamp(+m[1],.05,20),words:words.slice(1)};
+  if(QTY_WORD[words[0]]!=null&&words.length>1)
+    return {mult:QTY_WORD[words[0]],words:words.slice(1)};
+  m=/^x?(\d+(?:\.\d+)?)x?$/.exec(words[words.length-1]);
+  if(m&&words.length>1) return {mult:clamp(+m[1],.05,20),words:words.slice(0,-1)};
+  return {mult:1,words};
+}
+/* No separators, so walk the words: longest phrase first, one dish at a time.
+   "2 roti dal chawal" -> 2x roti, dal, rice. */
+function walkTokens(words,ix,rank,out){
+  let i=0;
+  while(i<words.length){
+    let mult=1,j=i;
+    const lead=/^(\d+(?:\.\d+)?)x?$/.exec(words[i]);
+    if(lead&&i+1<words.length){ mult=clamp(+lead[1],.05,20); j=i+1; }
+    else if(QTY_WORD[words[i]]!=null&&i+1<words.length){ mult=QTY_WORD[words[i]]; j=i+1; }
+    let hit=null,took=0;
+    for(let len=Math.min(3,words.length-j);len>=1;len--){
+      const part=words.slice(j,j+len), m=matchPhrase(part.join(" "),ix,rank);
+      // A multi-word phrase only counts if the dish name itself carries every
+      // word. Without this, "dal chawal" collapses into whichever dal happens
+      // to rank first and the rice is silently lost.
+      if(m&&(len===1||nameCovers(m.food,part))){ hit=m; took=len; break; }
+    }
+    if(hit){ out.push({food:hit.food,mult,alts:hit.alts,raw:words.slice(i,j+took).join(" ")}); i=j+took; }
+    else { out.push({miss:words[j]||words[i]}); i=j+1; }
+  }
+}
+/* Returns rows in the order they were typed. A row is either a matched dish or
+   a {miss}, which the sheet reports rather than quietly swallowing. */
+function parseLine(text,ix){
+  const t=String(text||"").trim().toLowerCase(), rows=[];
+  if(!t) return {rows};
+  ix=ix||foodIndex();
+  const rank=recentRank();
+  t.split(SEP).filter(Boolean).forEach(chunk=>{
+    let words=chunk.split(/\s+/).filter(Boolean);
+    const kept=words.filter(w=>!NOISE.has(w));
+    if(kept.length) words=kept;          // "1 bowl dal" is dal; "bowl" alone is not
+    const q=takeQty(words);
+    const whole=q.words.length?matchPhrase(q.words.join(" "),ix,rank):null;
+    // A chunk naming one dish outright stays one dish; anything else gets
+    // walked, so "dal makhani" survives whole but "roti dal" splits in two.
+    if(whole&&nameCovers(whole.food,q.words))
+      rows.push({food:whole.food,mult:q.mult,alts:whole.alts,raw:chunk});
+    else walkTokens(words,ix,rank,rows);
+  });
+  return {rows};
+}
+/* The bar above the search results. Silent until the text reads as 2+ dishes,
+   so searching for one thing never sees it. */
+function typedBar(q){
+  if(!q||!/[,+&]|\s/.test(q.trim())) return "";
+  const items=parseLine(q).rows.filter(r=>r.food);
+  if(items.length<2) return "";
+  const cal=items.reduce((a,r)=>a+r.food.cal*r.mult,0);
+  const names=items.map(r=>(r.mult!==1?r.mult+"× ":"")+r.food.n).join(" · ");
+  return `<button class="typed-bar" data-act="typed">
+    <span class="tb-em">\u{1F37D}️</span>
+    <span class="tb-b"><b>Log all ${items.length}</b><span class="tb-s">${esc(names)}</span></span>
+    <span class="tb-cal">${round(cal)}</span><span class="p-add">›</span></button>`;
+}
+
+/* -- confirm what was read -- */
+let batch=null;   // {rows,misses,meal} awaiting confirmation from a typed line
+function openBatch(text,meal){
+  const {rows}=parseLine(text), items=rows.filter(r=>r.food);
+  if(!items.length){ toast("Couldn't read that as a meal"); return; }
+  batch={rows:items,misses:rows.filter(r=>r.miss).map(r=>r.miss),meal:meal||pickMeal};
+  drawBatch();
+}
+function drawBatch(){
+  if(!batch) return;
+  const rows=batch.rows, total=rows.reduce((a,r)=>a+r.food.cal*r.mult,0);
+  const list=rows.map((r,i)=>
+    `<div class="brow">
+      <span class="b-em">${esc(r.food.e||"\u{1F37D}️")}</span>
+      <button class="b-b" data-bswap="${i}">
+        <span class="b-n">${esc(r.food.n)}</span>
+        <span class="b-s">${esc(r.raw)}${r.alts&&r.alts.length?" · tap to change":""}</span>
+      </button>
+      <div class="bqty"><button data-bmult="${i}:-">−</button><b>${r.mult}×</b><button data-bmult="${i}:+">+</button></div>
+      <span class="b-cal">${round(r.food.cal*r.mult)}</span>
+      <button class="b-x" data-bdel="${i}">✕</button>
+    </div>`).join("");
+  const miss=batch.misses.length
+    ? `<div class="bmiss">Couldn't find <b>${batch.misses.map(esc).join("</b>, <b>")}</b> —
+        search for it, or add it as just calories.</div>` : "";
+  openBatchSheet(
+    (rows.length?list:`<div class="empty">Nothing left to log.</div>`)+miss+
+    `<div class="btotal">Total<span>${round(total)} kcal</span></div>
+     <span class="flabel">Which meal</span>
+     <div class="meal-pick">${MEALS.map(mm=>
+       `<button data-bmp="${mm.k}"${mm.k===batch.meal?' class="on"':""}>
+         <span class="em">${mm.e}</span>${esc(mm.l)}</button>`).join("")}</div>
+     <button class="btn"${rows.length?"":" disabled"} data-act="confirm-batch">${
+       rows.length?`Add ${rows.length} — ${round(total)} kcal to ${esc(mealOf(batch.meal).l)}`
+                  :"Nothing to add"}</button>`);
+}
+function openBatchSheet(body){
+  openSheet("Log this meal",
+    `<button class="meal-add" data-act="back" style="padding:0 0 8px">‹ Back to list</button>`+body,true);
+}
+// Tapping a row's name offers the runners-up the parser passed over.
+function swapBatch(i){
+  if(!batch) return;
+  const r=batch.rows[i];
+  if(!r) return;
+  if(!r.alts||!r.alts.length){ toast(`Only one match for "${r.raw}"`); return; }
+  openSheet("Instead of "+r.food.n,
+    `<button class="meal-add" data-act="bback" style="padding:0 0 8px">‹ Back</button>`+
+    [r.food].concat(r.alts).map((f,k)=>
+      `<button class="pick" data-balt="${i}:${k}">
+        <span class="p-em">${esc(f.e||"\u{1F37D}️")}</span>
+        <span class="p-b"><span class="p-n">${esc(f.n)}</span>
+          <span class="p-s">${esc(f.s)} · P${round(f.p)} C${round(f.c)} F${round(f.f)}</span></span>
+        <span class="p-cal">${round(f.cal)}</span>
+        <span class="p-add">${k===0?"✓":"+"}</span></button>`).join(""),true);
+}
+function pickAlt(v){
+  if(!batch) return;
+  const parts=v.split(":"), r=batch.rows[+parts[0]];
+  if(!r) return;
+  const opts=[r.food].concat(r.alts), chosen=opts[+parts[1]];
+  if(chosen){ r.alts=opts.filter(f=>f!==chosen); r.food=chosen; }
+  drawBatch();
+}
+function bumpBatch(v){
+  if(!batch) return;
+  const parts=v.split(":"), r=batch.rows[+parts[0]];
+  if(!r) return;
+  r.mult=clamp(+(r.mult+(parts[1]==="+"?.5:-.5)).toFixed(2),.5,10);
+  drawBatch();
+}
+function commitBatch(){
+  if(!batch||!batch.rows.length) return;
+  const t=day(), meal=batch.meal;
+  let cal=0;
+  batch.rows.forEach(r=>{
+    const item=mkItem(r.food,r.mult,meal);
+    t.meals.push(item); cal+=item.cal;
+    S.qty[r.food.n.toLowerCase()]=r.mult;   // open here next time, same as one at a time
+    // ponytail: one upsert per dish. Batch them if five ever feels slow.
+    save({meal:item});
+  });
+  const n=batch.rows.length;
+  batch=null; closeSheet();
+  if(TAB!=="today") TAB="today";
+  render();
+  toast(`Added ${n} item${n>1?"s":""} — ${round(cal)} kcal to ${mealOf(meal).l}`);
+}
+
 /* -- quantity + meal -- */
-let pending=null; // {food, meal, mult, from}
-function openQty(food,meal,from){
-  pending={food,meal:meal||"snack",mult:1,from:from||null};
+let pending=null;   // {food, meal, mult, from, edit}
+let quickEdit=null; // the entry the "just calories" sheet is editing, if any
+/* Opens for a new log, or for an existing one when `edit` is passed. The
+   quantity it starts at is, in order: what this entry already is, what you
+   last had of this dish, or one. */
+function startMult(food,edit){
+  if(edit&&food.cal>0) return Math.max(.05,+(edit.cal/food.cal).toFixed(2));
+  return S.qty[food.n.toLowerCase()]||1;
+}
+function openQty(food,meal,from,edit){
+  pending={food,meal:(edit?edit.meal:meal)||"snack",mult:startMult(food,edit),
+    from:from||null,edit:edit||null};
   const f=food;
   openSheet(f.n,
     `${pending.from?`<button class="meal-add" data-act="back" style="padding:0 0 8px">‹ Back to list</button>`:""}
@@ -2166,7 +2570,7 @@ function openQty(food,meal,from){
     <div class="seg" id="qseg">${[0.5,1,1.5,2,3].map(x=>
       `<button data-mult="${x}"${x===1?' class="on"':""}>${x}×</button>`).join("")}</div>
     <div class="field"><label for="qexact">Or exact servings</label>
-      <div class="inrow"><input id="qexact" type="number" step="0.25" min="0" inputmode="decimal" value="1">
+      <div class="inrow"><input id="qexact" type="number" step="0.25" min="0" inputmode="decimal" value="${pending.mult}">
       <span class="unit">× ${esc(f.s)}</span></div></div>
     <span class="flabel">Which meal</span>
     <div class="meal-pick" id="mpick">${MEALS.map(mm=>
@@ -2196,25 +2600,88 @@ function syncQty(skipInput){
   [["cal","cal"],["p","p"],["c","c"],["f","f"],["fib","fib"]].forEach(([id,k])=>{
     const el=$("#np-"+id); if(el) el.textContent=round(f[k]*m);
   });
-  $("#qbtn").textContent=`Add ${round(f.cal*m)} kcal to ${mealOf(pending.meal).l}`;
+  $("#qbtn").textContent=pending.edit
+    ? `Save — ${round(f.cal*m)} kcal`
+    : `Add ${round(f.cal*m)} kcal to ${mealOf(pending.meal).l}`;
   const ex=$("#qexact");
   if(!skipInput&&ex&&parseFloat(ex.value)!==m) ex.value=m;
 }
+const newId=()=>"m"+Date.now()+Math.random().toString(36).slice(2,6);
+/* The one place a logged row gets built, so the picker, a typed line and an
+   edit can never drift apart on ids, macros or the quantity label. */
+function mkItem(food,mult,meal,edit){
+  const f=food, m=mult;
+  return {
+    id:edit?edit.id:newId(),            // same id on an edit, so sync updates the row
+    name:f.n, e:f.e||"\u{1F37D}️", meal,
+    cal:f.cal*m, p:f.p*m, c:f.c*m, f:f.f*m, fib:f.fib*m,
+    qtyLabel:(m===1?f.s:`${m}× ${f.s}`)};
+}
 function commitLog(){
   if(!pending) return;
-  const f=pending.food, m=pending.mult;
-  const item={
-    id:"m"+Date.now()+Math.random().toString(36).slice(2,6),
-    name:f.n, e:f.e||"\u{1F37D}️", meal:pending.meal,
-    cal:f.cal*m, p:f.p*m, c:f.c*m, f:f.f*m, fib:f.fib*m,
-    qtyLabel:(m===1?f.s:`${m}× ${f.s}`)
-  };
-  day().meals.push(item);
+  const f=pending.food, m=pending.mult, edit=pending.edit;
+  const item=mkItem(f,m,pending.meal,edit);
+  const t=day(), at=edit?t.meals.findIndex(x=>x.id===edit.id):-1;
+  if(at>-1) t.meals[at]=item; else t.meals.push(item);
+  S.qty[f.n.toLowerCase()]=m;           // open here next time
   const label=mealOf(pending.meal).l, kcal=round(f.cal*m);
   save({meal:item}); closeSheet();
   if(TAB!=="today"){ TAB="today"; }
   render();
-  toast(`Added ${kcal} kcal to ${label}`);
+  toast(edit?`Updated — ${kcal} kcal`:`Added ${kcal} kcal to ${label}`);
+}
+
+/* -- just calories -- for food with nothing to look up, and for fixing an
+   entry whose dish is no longer in the list -- */
+function openQuick(meal,edit){
+  quickEdit=edit||null;
+  const pick=edit?edit.meal:(meal||"snack");
+  openSheet(edit?"Edit entry":"Just calories",
+    `<p class="hint">For a meal you can't look up. Calories are enough — the rest is optional.</p>
+    <div class="field"><label for="q-name">What was it</label>
+      <div class="inrow"><input id="q-name" type="text" placeholder="Quick add"
+        value="${esc(edit?edit.name:"")}"></div></div>
+    <div class="grid2">
+      <div class="field"><label for="q-cal">Calories</label>
+        <div class="inrow"><input id="q-cal" type="number" inputmode="numeric" placeholder="600"
+          value="${edit?round(edit.cal):""}"><span class="unit">kcal</span></div></div>
+      <div class="field"><label for="q-prot">Protein</label>
+        <div class="inrow"><input id="q-prot" type="number" inputmode="numeric" placeholder="0"
+          value="${edit?round(edit.p):""}"><span class="unit">g</span></div></div>
+    </div>
+    <span class="flabel">Which meal</span>
+    <div class="meal-pick" id="qmpick">${MEALS.map(mm=>
+      `<button data-qmp="${mm.k}"${mm.k===pick?' class="on"':""}>
+        <span class="em">${mm.e}</span>${esc(mm.l)}</button>`).join("")}</div>
+    <button class="btn" data-act="save-quick">${edit?"Save changes":"Add"}</button>`);
+}
+function saveQuick(){
+  const cal=Math.max(0,parseInt($("#q-cal").value,10)||0);
+  if(!cal){ toast("How many calories?"); return; }
+  const on=$("#qmpick .on"), edit=quickEdit;
+  const item={
+    id:edit?edit.id:newId(),
+    name:($("#q-name").value.trim()||"Quick add"),
+    e:edit?edit.e:"\u{1F37D}️", meal:on?on.dataset.qmp:"snack",
+    cal, p:Math.max(0,parseInt($("#q-prot").value,10)||0), c:0, f:0, fib:0,
+    qtyLabel:"quick add"
+  };
+  const t=day(), at=edit?t.meals.findIndex(x=>x.id===edit.id):-1;
+  if(at>-1) t.meals[at]=item; else t.meals.push(item);
+  quickEdit=null;
+  save({meal:item}); closeSheet();
+  if(TAB!=="today") TAB="today";
+  render();
+  toast(edit?`Updated — ${cal} kcal`:`Added ${cal} kcal to ${mealOf(item.meal).l}`);
+}
+/* Tapping a logged row reopens it. If the dish is still in the list the
+   quantity sheet does the job; if it isn't -- a quick add, a deleted custom
+   food -- fall back to editing the raw numbers. */
+function editItem(id){
+  const x=day().meals.find(m=>m.id===id);
+  if(!x) return;
+  const f=allFoods().find(y=>y.n.toLowerCase()===x.name.toLowerCase());
+  if(f&&f.cal>0) openQty(f,x.meal,null,x); else openQuick(x.meal,x);
 }
 
 /* -- custom food -- */
@@ -2336,6 +2803,21 @@ document.addEventListener("click",e=>{
   if(el('[data-act="back"]')){ openFoodPicker(pickMeal); return; }
   if((n=el("[data-mult]"))){ pending.mult=parseFloat(n.dataset.mult); syncQty(); return; }
   if((n=el("[data-mp]"))){ pending.meal=n.dataset.mp; syncQty(); return; }
+  if((n=el("[data-qmp]"))){
+    Array.from(n.parentNode.children).forEach(b=>b.classList.toggle("on",b===n)); return; }
+  if((n=el("[data-copy]"))){ copyYesterday(n.dataset.copy); return; }
+  if((n=el("[data-edit]"))){ editItem(n.dataset.edit); return; }
+  if((n=el("[data-quick]"))){ openQuick(n.dataset.quick||pickMeal); return; }
+  // A typed line: parse, confirm, then log. Nothing here writes on its own.
+  if(el('[data-act="typed"]')){ const b=$("#pickSearch"); openBatch(b?b.value:"",pickMeal); return; }
+  if((n=el("[data-bmult]"))){ bumpBatch(n.dataset.bmult); return; }
+  if((n=el("[data-bdel]"))){ if(batch){ batch.rows.splice(+n.dataset.bdel,1); drawBatch(); } return; }
+  if((n=el("[data-bswap]"))){ swapBatch(+n.dataset.bswap); return; }
+  if((n=el("[data-balt]"))){ pickAlt(n.dataset.balt); return; }
+  if(el('[data-act="bback"]')){ drawBatch(); return; }
+  if((n=el("[data-bmp]"))){ if(batch){ batch.meal=n.dataset.bmp; drawBatch(); } return; }
+  if(el('[data-act="confirm-batch"]')){ commitBatch(); return; }
+  if(el('[data-act="save-quick"]')){ saveQuick(); return; }
   if(el('[data-act="confirm-log"]')){ commitLog(); return; }
   if(el('[data-act="add-food"]')){ openAddFood(); return; }
   if(el('[data-act="save-food"]')){ saveCustomFood(); return; }
@@ -2670,6 +3152,62 @@ function devCheck(){
   const bad=FOODS.filter(f=>!f.n||!f.cat||[f.cal,f.p,f.c,f.f,f.fib].some(v=>typeof v!=="number"));
   console.assert(bad.length===0,"food entries missing numbers",bad);
   console.assert(FOODS.length>250,"food list unexpectedly small",FOODS.length);
+
+  // ---- typing a whole meal ----
+  // Commas are meant to be a convenience, so both spellings must read the same.
+  const pl=q=>parseLine(q).rows.filter(r=>r.food);
+  const withC=pl("2 roti, dal, chawal"), noC=pl("2 roti dal chawal");
+  console.assert(withC.length===3,"a comma line should read 3 dishes",withC.map(r=>r.food.n));
+  console.assert(noC.every(r=>r.food),"a comma-less line must resolve every word",noC);
+  /* The two spellings do not have to agree row for row: with no separators the
+     walk takes the longest real dish name it can find, so "dal chawal" lands on
+     the plate of that name instead of splitting into dal and rice. Different
+     rows, near enough the same day -- that is the property worth holding. */
+  const kcal=rs=>rs.reduce((a,r)=>a+r.food.cal*r.mult,0);
+  console.assert(Math.abs(kcal(withC)-kcal(noC))<=kcal(withC)*.25,
+    "which spelling you use must not move the day much",kcal(withC),kcal(noC));
+  console.assert(pl("roti dal chawal").some(r=>r.food.n==="Dal Chawal"),
+    "an exact multi-word dish name must win the walk",pl("roti dal chawal").map(r=>r.food.n));
+  console.assert(withC[0].mult===2&&noC[0].mult===2,"a leading 2 is a quantity, not a dish");
+  console.assert(withC.slice(1).every(r=>r.mult===1),"the quantity must not leak into the next dish",withC);
+  // A name that is itself two words has to survive the word-by-word walk.
+  console.assert(pl("dal makhani").length===1&&pl("dal makhani")[0].food.n==="Dal Makhani",
+    "an exact two-word name must stay one dish",pl("dal makhani"));
+  console.assert(pl("half plate rice")[0].mult===0.5,"'half' is a quantity",pl("half plate rice"));
+  console.assert(pl("1 bowl dal").length===1&&pl("1 bowl dal")[0].food.n==="Dal Tadka",
+    "serving words are noise, not dishes",pl("1 bowl dal"));
+  const junk=parseLine("zzzqq");
+  console.assert(junk.rows.filter(r=>r.food).length===0&&junk.rows.filter(r=>r.miss).length===1,
+    "nonsense must resolve to nothing, and be reported rather than swallowed",junk.rows);
+  console.assert(pl("2").length===0,"a bare number must not match every '1 bowl (200g)' serving");
+  console.assert(typedBar("dal").indexOf("typed-bar")===-1,"one dish must not raise the bar");
+  console.assert(typedBar("roti dal").indexOf("typed-bar")>-1,"two dishes must raise the bar");
+
+  // ---- mkItem: the one place a logged row is built ----
+  const mf={n:"T",e:"x",s:"1 bowl",cal:100,p:10,c:20,f:5,fib:2};
+  const mi=mkItem(mf,2,"lunch");
+  console.assert(mi.cal===200&&mi.p===20&&mi.c===40&&mi.f===10&&mi.fib===4,
+    "mkItem must scale every macro",mi);
+  console.assert(mi.meal==="lunch"&&mi.qtyLabel==="2× 1 bowl","mkItem label or meal wrong",mi);
+  console.assert(mkItem(mf,1,"lunch").qtyLabel==="1 bowl","a single serving keeps the plain label");
+  console.assert(mkItem(mf,1,"lunch").id!==mkItem(mf,1,"lunch").id,"every new log needs its own id");
+  console.assert(mkItem(mf,1,"lunch",{id:"keep"}).id==="keep",
+    "an edit must keep its id, or the upsert writes a second row");
+
+  // ---- this week ----
+  const ws=weekStats();
+  console.assert(ws.now&&ws.was&&ws.now.logged<=7&&ws.was.logged<=7,
+    "weekStats must split fourteen days into two sevens",ws);
+  const short={now:{logged:6,cal:1800,p:S.profile.p*.4,fib:1e4,water:1e5},
+               was:{logged:6,cal:1800,p:0,fib:0,water:0}};
+  console.assert(/protein/i.test(weekTip(short).t),"a protein gap is what the tip should talk about",
+    weekTip(short));
+  const clean={now:{logged:7,cal:1800,p:S.profile.p,fib:S.profile.fib,water:S.profile.waterGoal},
+               was:{logged:7,cal:1800,p:0,fib:0,water:0}};
+  console.assert(!/short|only/i.test(weekTip(clean).t),"a clean week must not be told off",weekTip(clean));
+  console.assert(weekTip({now:{logged:0,cal:0,p:0,fib:0,water:0},was:{logged:0}}).t.length>0,
+    "an empty week still gets a line");
+  console.assert(viewWeek().indexOf("wk-tip")>-1,"the weekly card must draw its tip");
 }
 devCheck();
 
