@@ -1,0 +1,14 @@
+# One HTML file, no build step. Publishing the repo root is the whole config;
+# keeping it here rather than in the Netlify dashboard means the setting is
+# reviewable in git and survives someone re-linking the site.
+[build]
+  publish = "."
+
+# The service worker decides how stale the installed app is allowed to get, so
+# the browser must never hand back a cached copy of the worker itself. Netlify
+# already defaults to must-revalidate; saying it out loud keeps a future
+# asset-caching rule from quietly covering sw.js too.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"

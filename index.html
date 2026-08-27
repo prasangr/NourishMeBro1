@@ -3179,8 +3179,12 @@ function targetDraft(){
     exercise:on("#t-ex","ex")||"rare", goal:on("#t-goal","goal")||"maintain"};
 }
 function refreshTarget(){
-  const d=targetDraft(), out=$("#t-out");
+  /* The guard reads first. #sh-body is one shared node that every sheet
+     borrows, so this fires while the water goal or a custom food is on screen
+     -- and targetDraft() would go looking for #t-age and read null.value. */
+  const out=$("#t-out");
   if(!out) return;
+  const d=targetDraft();
   if(!d.age||!d.height||!d.weight){
     out.className="suggest waiting";
     out.innerHTML=`<span>Fill in age, height and weight to see a suggestion.</span>`;
@@ -3199,7 +3203,9 @@ function refreshTarget(){
 function openTarget(){
   openSheet("Set your target",targetForm(),true);
   refreshTarget();
-  $("#sh-body").addEventListener("input",refreshTarget);
+  // Assigned, not added: the sheet body outlives the sheet, and addEventListener
+  // left one more copy of this behind every time the target sheet was opened.
+  $("#sh-body").oninput=refreshTarget;
 }
 function saveTarget(){
   const d=targetDraft();
@@ -3288,12 +3294,20 @@ function toggleTheme(){
   if(!cur) cur=matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light";
   const next=cur==="dark"?"light":"dark";
   root.setAttribute("data-theme",next);
-  const meta=document.querySelector('meta[name="theme-color"]:not([media])');
-  if(meta) meta.content=next==="dark"?"#0E1113":"#E9ECEE";
+  statusBar(next);
   try{ localStorage.setItem("nourish.theme",next); }catch(e){}
 }
+/* Both theme-color metas carry a media query, so they follow the OS and not
+   the toggle. Once a choice has been made in the app it has to win, which
+   means writing it onto every one of them -- an installed app is mostly
+   status bar, and a light bar over a dark app looks broken. */
+function statusBar(t){
+  const c=t==="dark"?"#0E1113":"#E9ECEE";
+  document.querySelectorAll('meta[name="theme-color"]').forEach(m=>m.content=c);
+}
 (function initTheme(){
-  try{ const t=localStorage.getItem("nourish.theme"); if(t) document.documentElement.setAttribute("data-theme",t); }catch(e){}
+  try{ const t=localStorage.getItem("nourish.theme");
+    if(t){ document.documentElement.setAttribute("data-theme",t); statusBar(t); } }catch(e){}
 })();
 
 /* ============================ SELF-CHECK ============================ */
@@ -3531,6 +3545,12 @@ async function signOut(){
 }
 async function onSession(session){
   if(!session||!session.user){ USER=null; showAuth(); return; }
+  /* Three things call this for the same account: onAuthStateChange fires
+     INITIAL_SESSION the moment it is subscribed, boot() asks for the session
+     itself, and the token refreshes every hour. Each run does a full pull(),
+     and pull() empties S.days before refilling it -- so a second run can wipe
+     a meal logged a moment earlier. Same user, already loaded: nothing to do. */
+  if(USER&&USER.id===session.user.id) return;
   USER={id:session.user.id,email:session.user.email,
     name:((session.user.user_metadata||{}).name||"").trim()};
   hideAuth();
