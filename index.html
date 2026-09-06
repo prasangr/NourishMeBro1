@@ -3140,35 +3140,35 @@ function suggestTarget(p){
     maintain:round(maintain), target:Math.max(floor,round(target)),
     floored:round(target)<floor};
 }
+// Always opens blank -- nothing is carried in from the saved profile.
 function targetForm(){
-  const p=S.profile;
   return `<p class="hint">Seven answers, once. We work out roughly what you burn
     in a day and suggest a calorie target — you can change it afterwards.</p>
   <div class="grid2">
     <div class="field"><label for="t-age">Age</label>
-      <div class="inrow"><input id="t-age" type="number" inputmode="numeric" value="${p.age>0?p.age:""}" placeholder="28"><span class="unit">yrs</span></div></div>
+      <div class="inrow"><input id="t-age" type="number" inputmode="numeric" value="" placeholder="28"><span class="unit">yrs</span></div></div>
     <div class="field"><label>Sex</label>
       <div class="seg" id="t-sex">
-        <button type="button" data-sex="m" class="${p.sex==="f"?"":"on"}">Male</button>
-        <button type="button" data-sex="f" class="${p.sex==="f"?"on":""}">Female</button>
+        <button type="button" data-sex="m">Male</button>
+        <button type="button" data-sex="f">Female</button>
       </div></div>
   </div>
   <div class="grid2">
     <div class="field"><label for="t-ht">Height</label>
-      <div class="inrow"><input id="t-ht" type="number" inputmode="numeric" value="${p.height||""}" placeholder="175"><span class="unit">cm</span></div></div>
+      <div class="inrow"><input id="t-ht" type="number" inputmode="numeric" value="" placeholder="175"><span class="unit">cm</span></div></div>
     <div class="field"><label for="t-wt">Weight</label>
-      <div class="inrow"><input id="t-wt" type="number" inputmode="decimal" value="${p.weight||""}" placeholder="72"><span class="unit">kg</span></div></div>
+      <div class="inrow"><input id="t-wt" type="number" inputmode="decimal" value="" placeholder="72"><span class="unit">kg</span></div></div>
   </div>
   <label class="flabel">Most of your day</label>
   <div class="stack" id="t-job" style="margin-bottom:16px">${JOBS.map(j=>
-    `<button type="button" class="opt${(p.job||"sitting")===j.k?" on":""}" data-job="${j.k}">
+    `<button type="button" class="opt" data-job="${j.k}">
       <b>${esc(j.l)}</b><span>${esc(j.s)}</span></button>`).join("")}</div>
   <label class="flabel">Exercise</label>
   <div class="seg wrap" id="t-ex" style="margin-bottom:16px">${EXERCISE.map(e=>
-    `<button type="button" class="${(p.exercise||"rare")===e.k?"on":""}" data-ex="${e.k}">${esc(e.l)}</button>`).join("")}</div>
+    `<button type="button" data-ex="${e.k}">${esc(e.l)}</button>`).join("")}</div>
   <label class="flabel">What are you after</label>
   <div class="stack" id="t-goal" style="margin-bottom:16px">${GOALS.map(g=>
-    `<button type="button" class="opt${(p.goal||"maintain")===g.k?" on":""}" data-goal="${g.k}">
+    `<button type="button" class="opt" data-goal="${g.k}">
       <b>${esc(g.l)}</b><span>${esc(g.s)}</span></button>`).join("")}</div>
   <div class="suggest" id="t-out"></div>
   <div class="stack">
@@ -3586,7 +3586,11 @@ async function onSession(session){
      it that way sat at age 0 and got ambushed on every single launch. From here
      it is the You tab's "Suggest my target" button or nothing. */
   if(!S.profile.age){
+    /* The mark has to reach the server too. save() only writes localStorage,
+       and pull() overwrites S.profile from the row on every launch -- so an
+       account whose row still said age 0 got the sheet again every time. */
     S.profile.age=-1; save({profile:true});
+    push({profile:true}).catch(()=>{});
     setTimeout(openTarget,600);
   }
 }
