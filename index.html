@@ -2477,7 +2477,12 @@ function viewYou(){
       goal, ${round(p.calGoal)} kcal — anything above it went over. Averages count only the days you logged.</p>
   </section>
 
-  <section class="card"><h2>Your profile</h2>
+  <section class="card">
+    <button class="btn ghost" id="profile-toggle" style="width:100%;text-align:left;display:flex;justify-content:space-between;align-items:center" onclick="(function(){var f=document.getElementById('profile-fields');var open=!f.hidden;f.hidden=open;document.getElementById('profile-toggle-arrow').textContent=open?'›':'⌃';})()">
+      <span>Edit profile</span><span id="profile-toggle-arrow">›</span>
+    </button>
+    <div id="profile-fields" hidden>
+    <div style="height:12px"></div>
     <div class="field"><label for="g-name">Your name</label>
       <div class="inrow"><input id="g-name" type="text" autocomplete="name"
         placeholder="What should we call you?" value="${esc(p.name||"")}"></div></div>
@@ -2495,6 +2500,7 @@ function viewYou(){
       <button class="btn" data-act="save-goals">Save profile</button>
       <button class="btn ghost" data-act="target">Suggest my target</button>
       <button class="btn ghost" data-act="automacro">Fill macros from calories</button>
+    </div>
     </div>
   </section>
 
@@ -3140,7 +3146,7 @@ function targetForm(){
     in a day and suggest a calorie target — you can change it afterwards.</p>
   <div class="grid2">
     <div class="field"><label for="t-age">Age</label>
-      <div class="inrow"><input id="t-age" type="number" inputmode="numeric" value="${p.age||""}" placeholder="28"><span class="unit">yrs</span></div></div>
+      <div class="inrow"><input id="t-age" type="number" inputmode="numeric" value="${p.age>0?p.age:""}" placeholder="28"><span class="unit">yrs</span></div></div>
     <div class="field"><label>Sex</label>
       <div class="seg" id="t-sex">
         <button type="button" data-sex="m" class="${p.sex==="f"?"":"on"}">Male</button>
@@ -3527,7 +3533,13 @@ $("#auth-form").addEventListener("submit",async e=>{
       ? await sb.auth.signInWithPassword({email,password:pass})
       // The name rides along in the account metadata, so it survives the
       // email-confirmation round trip and is there at the next sign-in.
-      : await sb.auth.signUp({email,password:pass,options:{data:{name}}});
+      // emailRedirectTo is not optional: without it Supabase builds the
+      // confirmation link from the dashboard's Site URL, which ships as
+      // http://localhost:3000 -- so everyone who was sent the link landed on a
+      // dead page on their own machine. Point it back at wherever this copy of
+      // the app is actually being served from.
+      : await sb.auth.signUp({email,password:pass,options:{data:{name},
+          emailRedirectTo:location.origin+location.pathname}});
     if(r.error) throw r.error;
     if(r.data&&r.data.session) mood("yes");
     // With email confirmation switched on, signUp returns no session yet.
@@ -3568,14 +3580,27 @@ async function onSession(session){
     try{ await pull(); render(); }                         // reconcile with server
     catch(e){ console.error("[pull]",e); toast("Couldn't load your account — showing the last copy"); }
   }
-  // Asked once, after the account's own numbers have landed. age is 0 on a new
-  // profile and -1 once someone has said "not now", so neither gets asked twice.
-  if(!S.profile.age) setTimeout(openTarget,600);
+  /* Asked once, ever, after the account's own numbers have landed. The mark is
+     made when the sheet OPENS, not when it is answered -- closing it on the
+     scrim, the X or Escape used to record nothing, so an account that dismissed
+     it that way sat at age 0 and got ambushed on every single launch. From here
+     it is the You tab's "Suggest my target" button or nothing. */
+  if(!S.profile.age){
+    S.profile.age=-1; save({profile:true});
+    setTimeout(openTarget,600);
+  }
 }
 
 /* ============================ GO ============================ */
 async function boot(){
   if(!CLOUD){ render(); return; }   // no Supabase configured: device-only mode
+  /* Read the confirmation link's outcome BEFORE createClient: supabase-js
+     strips the hash the moment it finds a session in the URL. An expired or
+     already-used link comes back as #error=... with no session at all, and
+     that used to land on the sign-in screen with nothing explaining why. */
+  const back=new URLSearchParams(
+    (location.hash||"").replace(/^#/,"") || location.search.replace(/^\?/,""));
+  const linkErr=back.get("error_description")||back.get("error");
   try{
     const {createClient}=await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
     sb=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
@@ -3584,9 +3609,22 @@ async function boot(){
     render(); toast("Couldn't reach the sign-in service — saving on this device only");
     return;
   }
-  sb.auth.onAuthStateChange((_evt,session)=>onSession(session));
-  const {data}=await sb.auth.getSession();
-  onSession(data.session);
+  /* Whatever happens here, the page must end up painted. #view is empty in the
+     markup and #auth starts hidden, so a throw out of getSession() -- which is
+     what a malformed or already-consumed confirmation link produces -- used to
+     end boot() early and leave a blank white screen with nothing to tap. */
+  try{
+    sb.auth.onAuthStateChange((_evt,session)=>onSession(session));
+    const {data}=await sb.auth.getSession();
+    await onSession(data.session);
+  }catch(e){
+    console.error("[auth]",e);
+    USER=null; render(); showAuth();
+  }
+  if(linkErr&&!USER){
+    showAuth();
+    authError(linkErr.replace(/\+/g," ")+" — ask for a fresh link, or sign in below.",true);
+  }
 }
 boot();
 
