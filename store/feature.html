@@ -1,0 +1,30 @@
+<!doctype html><meta charset="utf-8">
+<title>Feature graphic</title>
+<!-- Play's feature graphic is exactly 1024x500 and gets cropped on some
+     surfaces, so the mascot and the words stay well inside the middle. -->
+<style>
+  html,body{margin:0}
+  body{width:1024px;height:500px;overflow:hidden;
+    font:16px/1.4 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  .wrap{width:1024px;height:500px;display:flex;align-items:center;gap:56px;padding:0 72px;
+    box-sizing:border-box;background:
+      radial-gradient(120% 140% at 12% 0%, #FFF6E6 0%, #F2EDE6 45%, #E9ECEE 100%)}
+  .mascot{width:250px;height:250px;flex:none;border-radius:27%;
+    box-shadow:0 20px 40px rgba(21,25,28,.20),0 0 0 1px rgba(21,25,28,.06)}
+  h1{margin:0;font-size:66px;line-height:1.02;letter-spacing:-.025em;color:#15191C;font-weight:800}
+  p{margin:16px 0 0;font-size:26px;color:#4A5560;max-width:19ch}
+  /* The dawn-to-night meal ramp, the app's own way of telling meals apart. */
+  .ramp{display:flex;gap:8px;margin-top:26px}
+  .ramp i{height:12px;width:74px;border-radius:99px;display:block}
+</style>
+<div class="wrap">
+  <img class="mascot" src="../icon-512.png" alt="">
+  <div>
+    <h1>Nourish me&nbsp;Bro</h1>
+    <p>Calories and habits, built around Indian home food.</p>
+    <div class="ramp">
+      <i style="background:#EBC55B"></i><i style="background:#E2812C"></i>
+      <i style="background:#B4462F"></i><i style="background:#4C55A0"></i>
+    </div>
+  </div>
+</div>
