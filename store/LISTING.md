@@ -13,21 +13,29 @@ Privacy policy: https://prasangr.github.io/NourishMeBro1/privacy.html
 
 ## Short description (80 char limit)
 
-    Calorie and habit tracker built around Indian home food. 736 dishes built in.
+    Calorie and habit tracker. 738 foods, real servings, no weighing scale.
 
 ## Full description
 
-    Most calorie apps are built around Western food. Searching for what you
-    actually ate at home — poha, dal tadka, jowar roti, bhindi masala — means
-    scrolling past twenty American brands to find nothing.
+    Most calorie apps make you work for every meal: hunt through brand names you
+    never ate, weigh things on a scale you do not own, then find the dish you
+    actually had is missing.
 
-    Nourish me Bro starts with Indian home food. 736 dishes are already in it,
-    with sensible servings: one bowl of dal, two rotis, one plate of poha. No
-    weighing scale needed.
+    Nourish me Bro is built the other way round. 738 foods are already in it,
+    each with a serving a person would recognise: one bowl of pasta, two slices
+    of toast, one plate of poha, a medium banana. Pick it, log it, move on.
+
+    WHAT IS IN IT
+
+    Home cooking, restaurant plates and everyday packaged food across Italian,
+    Chinese and Asian, fast food, sandwiches and wraps, salads, soups, eggs,
+    Western breakfasts, cafe and bakery items, protein and fitness foods,
+    fruit, nuts, dairy and sweets. Indian home food is covered properly too,
+    which most trackers get wrong or skip entirely.
 
     WHAT IT DOES
 
-    • Log a meal in a couple of taps, or just type "2 roti, dal, curd"
+    • Log a meal in a couple of taps, or just type "2 toast, eggs, coffee"
     • See calories, protein, carbs, fat and fibre against your own targets
     • Track daily habits and streaks — workout, sleep, steps, whatever you pick
     • Log water by the glass
