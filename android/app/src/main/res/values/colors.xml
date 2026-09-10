@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- Same ground colour the web app paints, so the splash and the system bars
+       do not flash a different shade before the page appears. -->
+  <color name="app_bg">#E9ECEE</color>
+  <color name="ic_launcher_background">#E9ECEE</color>
+</resources>

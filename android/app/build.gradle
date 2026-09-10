@@ -1,0 +1,44 @@
+plugins{ id "com.android.application" }
+
+android{
+  namespace "io.github.prasangr.nourishmebro"
+  // Play requires new releases to target the current API level; 36 is the one
+  // in force since 31 Aug 2026. Bumping this is the yearly maintenance cost of
+  // being on the store at all.
+  compileSdk 36
+  defaultConfig{
+    applicationId "io.github.prasangr.nourishmebro"
+    minSdk 21
+    targetSdk 36
+    versionCode 1
+    versionName "1.0.0"
+  }
+  // The keystore is passed in by CI and never lives in the repo. Without it the
+  // release build still runs (unsigned) so a pull request can be compiled by
+  // anyone, but only a signed build is uploadable to Play.
+  def storePath=System.getenv("KEYSTORE_PATH")
+  signingConfigs{
+    release{
+      if(storePath){
+        storeFile file(storePath)
+        storePassword System.getenv("KEYSTORE_PASSWORD")
+        keyAlias System.getenv("KEY_ALIAS")
+        keyPassword System.getenv("KEY_PASSWORD")
+      }
+    }
+  }
+  buildTypes{
+    release{
+      if(storePath) signingConfig signingConfigs.release
+      minifyEnabled false
+    }
+  }
+  compileOptions{ sourceCompatibility JavaVersion.VERSION_17; targetCompatibility JavaVersion.VERSION_17 }
+}
+
+dependencies{
+  // Google's own TWA host: it launches Chrome in app mode, checks the Digital
+  // Asset Link, draws the splash screen, and falls back to a Custom Tab when
+  // the browser on the device cannot do TWAs.
+  implementation "com.google.androidbrowserhelper:androidbrowserhelper:2.6.2"
+}

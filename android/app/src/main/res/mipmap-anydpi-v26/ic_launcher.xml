@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+  <background android:drawable="@color/ic_launcher_background"/>
+  <!-- A maskable web icon keeps its art inside the inner 80%; an adaptive icon
+       only guarantees the inner 66%, so inset it rather than let a round mask
+       clip the mascot. -->
+  <foreground><inset android:drawable="@mipmap/ic_launcher_foreground" android:inset="9%"/></foreground>
+  <monochrome><inset android:drawable="@mipmap/ic_launcher_foreground" android:inset="9%"/></monochrome>
+</adaptive-icon>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">Nourish me Bro</string>
+  <string name="launcher_name">Nourish</string>
+  <string name="launch_url">https://prasangr.github.io/NourishMeBro1/</string>
+  <!-- The app half of the Digital Asset Link. The matching half is
+       https://prasangr.github.io/.well-known/assetlinks.json, which must carry
+       the SHA-256 of the key that actually signs the delivered build -- for a
+       Play release that is Play's own signing key, not the upload key. -->
+  <string name="asset_statements">
+    [{ \"relation\": [\"delegate_permission/common.handle_all_urls\"],
+       \"target\": { \"namespace\": \"web\", \"site\": \"https://prasangr.github.io\" }}]
+  </string>
+</resources>
