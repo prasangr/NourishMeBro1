@@ -1576,7 +1576,13 @@ const CLOUD=!!(SUPABASE_URL&&SUPABASE_PUBLISHABLE_KEY);
 
 /* ============================ STATE ============================ */
 const KEY="nourish.v1";                                    // device-only mode
-const todayStr=()=>new Date().toLocaleDateString("en-CA"); // YYYY-MM-DD local
+/* Every key in S.days is YYYY-MM-DD, built by hand. toLocaleDateString("en-CA")
+   returns that shape on most builds, which is why it was used -- but a device
+   whose ICU lacks the en-CA locale silently falls back to US format. Chrome 110
+   on Android returns "9/10/2026", which matches no stored key, so a synced
+   account rendered as an empty day while its rows sat in memory. */
+const ymd=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const todayStr=()=>ymd(new Date());              // YYYY-MM-DD local
 let sb=null;    // supabase client, once loaded
 let USER=null;  // {id,email} when signed in
 
@@ -1712,7 +1718,7 @@ const canPullOverEmpty=(days,customFoods)=>!Object.keys(days).length&&!customFoo
 // Day rows are tiny, so pull enough history for streaks; meals only need to
 // cover today plus the week chart.
 async function pull(){
-  const back=n=>new Date(Date.now()-n*86400000).toLocaleDateString("en-CA");
+  const back=n=>ymd(new Date(Date.now()-n*86400000));
   const [prof,hab,foods,days,meals]=await Promise.all([
     sb.from("profiles").select("*").eq("user_id",uid()).maybeSingle(),
     sb.from("habits").select("*").eq("user_id",uid()),
@@ -1780,7 +1786,7 @@ function streak(habitId){
   const h=S.habits.find(x=>x.id===habitId); if(!h) return 0;
   let count=0; const now=Date.now();
   for(let i=0;i<400;i++){
-    const ds=new Date(now-i*86400000).toLocaleDateString("en-CA");
+    const ds=ymd(new Date(now-i*86400000));
     if(isHabitDone(h,S.days[ds])) count++;
     else if(i===0) continue;   // today not ticked yet - streak is still alive
     else break;
@@ -1916,7 +1922,7 @@ function mealGroup(m,t){
 // Yesterday's version of this meal, offered only when there is one. Most days
 // breakfast is the same breakfast, and six taps for that is five too many.
 function yesterdayMeals(k){
-  const ds=new Date(Date.now()-86400000).toLocaleDateString("en-CA");
+  const ds=ymd(new Date(Date.now()-86400000));
   return ((S.days[ds]||{}).meals||[]).filter(x=>x.meal===k);
 }
 function sameAsYesterday(m){
@@ -2008,7 +2014,7 @@ let calRange=7;
 function lastN(n){
   const now=Date.now(), out=[];
   for(let i=n-1;i>=0;i--){
-    const d=new Date(now-i*86400000), ds=d.toLocaleDateString("en-CA");
+    const d=new Date(now-i*86400000), ds=ymd(d);
     out.push({ds, today:ds===todayStr(), letter:d.toLocaleDateString("en-US",{weekday:"narrow"})});
   }
   return out;
@@ -3073,7 +3079,7 @@ document.addEventListener("click",e=>{
   if((n=el("[data-hday]"))){
     const d=new Date(habitDate+"T00:00:00");
     d.setDate(d.getDate()+Number(n.dataset.hday));
-    const ds=d.toLocaleDateString("en-CA");
+    const ds=ymd(d);
     if(ds<=todayStr()) habitDate=ds;       // no ticking a day that has not happened
     render(); return; }
   if((n=el("[data-hcheck]"))){
@@ -3346,6 +3352,10 @@ function devCheck(){
   console.assert(pct(50,100)===50&&pct(200,100)===100&&pct(5,0)===0,"pct broken",pct(5,0));
   console.assert(streak("does-not-exist")===0,"streak of unknown habit should be 0");
   // deleting every habit must stick: only an account with no profile row seeds
+  // The whole app keys off this string; a locale-dependent one emptied the UI.
+  console.assert(ymd(new Date(2026,8,10))==="2026-09-10","ymd must pad and order YYYY-MM-DD");
+  console.assert(ymd(new Date(2026,0,5))==="2026-01-05","ymd must zero-pad single digits");
+  console.assert(/^\d{4}-\d{2}-\d{2}$/.test(todayStr()),"todayStr must be YYYY-MM-DD on every locale");
   console.assert(canPullOverEmpty({},[])===true,"an empty cache must still pull after a failed flush");
   console.assert(canPullOverEmpty({"2026-09-10":{}},[])===false,"a cache with days must not be overwritten");
   console.assert(canPullOverEmpty({},[{id:"f1"}])===false,"an unsynced custom food must not be lost");
