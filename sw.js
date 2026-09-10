@@ -64,8 +64,14 @@ self.addEventListener("fetch", e => {
   // Everything else, the app itself included: network first, cache as the
   // fallback. r.ok is false for opaque cross-origin responses, so those are
   // passed through rather than stored as an empty hit.
+  // GitHub Pages serves the HTML with Cache-Control: max-age=600, and a plain
+  // fetch() here is allowed to answer from the browser's HTTP cache -- so
+  // "network first" could hand back a ten-minute-old build and never notice.
+  // A WebView can hold it longer still. Navigations skip that cache entirely;
+  // everything else may use it, because those URLs are versioned or immutable.
+  const hitNetwork = req.mode === "navigate" ? fetch(req, { cache: "no-store" }) : fetch(req);
   e.respondWith(
-    fetch(req)
+    hitNetwork
       .then(r => {
         if (r && r.ok) { const copy = r.clone(); caches.open(CACHE).then(c => c.put(req, copy)); }
         return r;
