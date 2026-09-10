@@ -1706,6 +1706,8 @@ async function wipeCloud(){
 // the real first-sign-in marker, so seed against that instead -- otherwise the
 // defaults reappear on the next launch and cannot be got rid of.
 const shouldSeedHabits=(habits,profileRow)=>!habits.length&&!profileRow;
+// Named so the rule above is testable without a network or a session.
+const canPullOverEmpty=(days,customFoods)=>!Object.keys(days).length&&!customFoods.length;
 
 // Day rows are tiny, so pull enough history for streaks; meals only need to
 // cover today plus the week chart.
@@ -3344,6 +3346,9 @@ function devCheck(){
   console.assert(pct(50,100)===50&&pct(200,100)===100&&pct(5,0)===0,"pct broken",pct(5,0));
   console.assert(streak("does-not-exist")===0,"streak of unknown habit should be 0");
   // deleting every habit must stick: only an account with no profile row seeds
+  console.assert(canPullOverEmpty({},[])===true,"an empty cache must still pull after a failed flush");
+  console.assert(canPullOverEmpty({"2026-09-10":{}},[])===false,"a cache with days must not be overwritten");
+  console.assert(canPullOverEmpty({},[{id:"f1"}])===false,"an unsynced custom food must not be lost");
   console.assert(shouldSeedHabits([],null)===true,"a brand new account gets the starter habits");
   console.assert(shouldSeedHabits([],{user_id:"x"})===false,"an existing account must not re-seed");
   console.assert(shouldSeedHabits(DEFAULT_HABITS,null)===false,"never seed over existing habits");
@@ -3596,7 +3601,13 @@ async function onSession(session){
      replace S.days and take the unsynced work with it. Staying on local state
      and retrying later is the only safe move. */
   const flushed=await flushDirty();
-  if(!flushed){
+  /* Skipping the pull protects unsynced local work -- but a cache with no days
+     and no custom foods has none to protect, and refusing to pull then leaves a
+     fresh device showing an empty account forever, because the dirty flag
+     survives every restart and the flush keeps failing. Nothing to lose means
+     the server copy is strictly better than what is on screen. */
+  const nothingToLose=canPullOverEmpty(S.days,S.customFoods);
+  if(!flushed&&!nothingToLose){
     toast("Offline — your logs are safe here and will sync when you're back");
   }else{
     try{ await pull(); render(); }                         // reconcile with server
