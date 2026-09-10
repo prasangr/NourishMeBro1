@@ -265,6 +265,7 @@ button{cursor:pointer;border:none;background:none;touch-action:manipulation}
 .habit .h-streak.live{color:var(--accent)}
 .habit .h-streak button{color:var(--ink-3);font-size:11.5px;font-weight:700;
   text-decoration:underline;text-underline-offset:2px;min-height:30px}
+.habit .h-streak button.del{color:var(--danger)}
 .check{width:40px;height:40px;border-radius:11px;border:2px solid var(--line-2);flex:none;
   display:grid;place-items:center;font-size:17px;color:transparent;
   transition:transform .15s,background .15s,border-color .15s}
@@ -1700,6 +1701,12 @@ async function wipeCloud(){
     await chk(sb.from(t).delete().eq("user_id",uid()));
   await chk(sb.from("profiles").upsert(rowProfile()));
 }
+// An empty habits table is not proof of a new account: it is also what you get
+// after someone deletes every starter habit they were given. The profile row is
+// the real first-sign-in marker, so seed against that instead -- otherwise the
+// defaults reappear on the next launch and cannot be got rid of.
+const shouldSeedHabits=(habits,profileRow)=>!habits.length&&!profileRow;
+
 // Day rows are tiny, so pull enough history for streaks; meals only need to
 // cover today plus the week chart.
 async function pull(){
@@ -1740,7 +1747,7 @@ async function pull(){
   // Local state is finished and saved BEFORE either write goes out: a write
   // that fails (a column this deploy expects and the database has not got yet)
   // must not leave the account with an empty habits tab.
-  const seeding=!S.habits.length;
+  const seeding=shouldSeedHabits(S.habits,prof.data);
   if(seeding) S.habits=DEFAULT_HABITS.map(h=>Object.assign({},h));
   save();
   if(!prof.data||!prof.data.email||(!prof.data.name&&S.profile.name))
@@ -1986,7 +1993,8 @@ function habitRow(h,rec){
     <div class="h-body"><div class="h-name">${esc(h.name)}</div>
       <div class="h-streak${st>0?" live":""}">
         <span>${st>0?`${st} day${st>1?"s":""} in a row`:"Start today"}</span>
-        <button data-hedit="${esc(h.id)}">Edit</button></div></div>
+        <button data-hedit="${esc(h.id)}">Edit</button>
+        <button class="del" data-hdel="${esc(h.id)}">Delete</button></div></div>
     ${ctrl}
   </div>`;
 }
@@ -2968,6 +2976,14 @@ function openAddHabit(existing){
     $("#hb-target-wrap").style.display=b.dataset.t==="count"?"block":"none";
   };
 }
+// Both the row's Delete and the edit sheet's come through here, so the streak
+// warning cannot go missing from one of them.
+function delHabit(id){
+  const h=S.habits.find(x=>x.id===id); if(!h) return;
+  if(!confirm(`Delete "${h.name}"? Its streak goes with it.`)) return;
+  S.habits=S.habits.filter(x=>x.id!==id);
+  save({unhabit:id}); closeSheet(); render(); toast("Habit removed");
+}
 function saveHabit(editId){
   const n=($("#hb-n").value||"").trim();
   if(!n){ toast("Name the habit first"); $("#hb-n").focus(); return; }
@@ -3071,11 +3087,11 @@ document.addEventListener("click",e=>{
   if((n=el("[data-hminus]"))){
     const id=n.dataset.hminus, t=day(habitDate);
     t.habits[id]=Math.max(0,(t.habits[id]||0)-1); save({day:habitDate}); render(); return; }
+  if((n=el("[data-hdel]"))){ delHabit(n.dataset.hdel); return; }
   if((n=el("[data-hedit]"))){ const h=S.habits.find(x=>x.id===n.dataset.hedit); if(h) openAddHabit(h); return; }
   if(el('[data-act="add-habit"]')){ openAddHabit(); return; }
   if((n=el('[data-act="save-habit"]'))){ saveHabit(n.dataset.edit||null); return; }
-  if((n=el('[data-act="del-habit"]'))){
-    S.habits=S.habits.filter(h=>h.id!==n.dataset.id); save({unhabit:n.dataset.id}); closeSheet(); render(); toast("Habit removed"); return; }
+  if((n=el('[data-act="del-habit"]'))){ delHabit(n.dataset.id); return; }
 
   // The target sheet's own choices: highlight the tapped one, redo the sum.
   if((n=el("#t-job [data-job],#t-ex [data-ex],#t-sex [data-sex],#t-goal [data-goal]"))){
@@ -3327,6 +3343,12 @@ function devCheck(){
   console.assert(clamp(5,0,1)===1&&clamp(-1,0,1)===0,"clamp broken");
   console.assert(pct(50,100)===50&&pct(200,100)===100&&pct(5,0)===0,"pct broken",pct(5,0));
   console.assert(streak("does-not-exist")===0,"streak of unknown habit should be 0");
+  // deleting every habit must stick: only an account with no profile row seeds
+  console.assert(shouldSeedHabits([],null)===true,"a brand new account gets the starter habits");
+  console.assert(shouldSeedHabits([],{user_id:"x"})===false,"an existing account must not re-seed");
+  console.assert(shouldSeedHabits(DEFAULT_HABITS,null)===false,"never seed over existing habits");
+  console.assert(habitRow(DEFAULT_HABITS[0],{habits:{}}).indexOf('data-hdel="h_workout"')>-1,
+    "every habit row needs its own delete button");
   console.assert(esc('<img src=x onerror="a">')==="&lt;img src=x onerror=&quot;a&quot;&gt;","esc broken");
 
   // rail: under goal keeps the goal tick at the right edge, over goal pulls it in
