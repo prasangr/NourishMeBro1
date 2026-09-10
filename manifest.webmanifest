@@ -1,7 +1,7 @@
 {
   "name": "Nourish me Bro",
   "short_name": "Nourish",
-  "description": "Track calories, macros and daily habits. 738 foods with real serving sizes.",
+  "description": "Track calories, macros and daily habits.",
   "start_url": ".",
   "scope": ".",
   "display": "standalone",

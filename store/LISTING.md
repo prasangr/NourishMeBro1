@@ -13,41 +13,33 @@ Privacy policy: https://prasangr.github.io/NourishMeBro1/privacy.html
 
 ## Short description (80 char limit)
 
-    Calorie and habit tracker. 738 foods, real servings, no weighing scale.
+    A calorie and habit tracker that counts in bowls and plates, not grams.
 
 ## Full description
 
-    Most calorie apps make you work for every meal: hunt through brand names you
-    never ate, weigh things on a scale you do not own, then find the dish you
-    actually had is missing.
+    Every calorie app wants a number you do not have. Grams of rice. Grams of
+    chicken. You did not weigh any of it, so you guess — and after a week of
+    guessing badly, you stop opening the app.
 
-    Nourish me Bro is built the other way round. 738 foods are already in it,
-    each with a serving a person would recognise: one bowl of pasta, two slices
-    of toast, one plate of poha, a medium banana. Pick it, log it, move on.
-
-    WHAT IS IN IT
-
-    Home cooking, restaurant plates and everyday packaged food across Italian,
-    Chinese and Asian, fast food, sandwiches and wraps, salads, soups, eggs,
-    Western breakfasts, cafe and bakery items, protein and fitness foods,
-    fruit, nuts, dairy and sweets. Indian home food is covered properly too,
-    which most trackers get wrong or skip entirely.
+    Nourish me Bro counts the way people actually eat. One bowl. One plate. Two
+    slices. A medium banana. Pick the food, pick how much, done. No scale, no
+    conversions, no pretending you measured lunch.
 
     WHAT IT DOES
 
-    • Log a meal in a couple of taps, or just type "2 toast, eggs, coffee"
+    • Log a meal in a couple of taps, or just type what you ate on one line
     • See calories, protein, carbs, fat and fibre against your own targets
     • Track daily habits and streaks — workout, sleep, steps, whatever you pick
     • Log water by the glass
     • A weekly summary that tells you one useful thing, and says so plainly when
       the week was fine
-    • Works offline; logs sync when you are back online
+    • Works offline; your logs sync when you are back online
     • Add your own foods when something is missing
 
-    HONEST ABOUT WHAT IT IS NOT
+    WHAT IT DOES NOT DO
 
-    No ads. No subscription. Nothing is sold to anyone. It does not nag, guilt,
-    or send notifications about your weight. There is no social feed.
+    No ads. No subscription. No streak-shaming notifications, no social feed,
+    nothing sold to anybody.
 
     Your logs live in your own account and are visible only to you. You can
     erase everything from inside the app at any time.
