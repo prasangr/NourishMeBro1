@@ -31,7 +31,7 @@
       </intent-filter>
       <!-- autoVerify is what makes Android fetch assetlinks.json. If that file
            is missing or its fingerprint is wrong, the app still opens but with
-           a browser address bar across the top -- the usual symptom of a
+           a browser address bar across the top, the usual symptom of a
            half-finished TWA. -->
       <intent-filter android:autoVerify="true">
         <action android:name="android.intent.action.VIEW"/>
